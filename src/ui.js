@@ -292,9 +292,19 @@ export function doMove(move, isWenSecondMove = false) {
     state.setLastMove(move);
     state.setSelectedPiece(null);
 
-    // 如果是轀的第二次移动，清理连续移动状态
+    // 如果是轀的第二次移动，清理连续移动状态并发送组合移动
     if (isWenSecondMove) {
+        const wenState = state.wenContinueState;
         state.setWenContinueState(null);
+        
+        // 联机模式：发送包含两次移动的组合消息
+        if (state.gameMode === 'online' && wenState) {
+            network.sendMove({
+                type: 'wen_double_move',
+                firstMove: wenState.firstMove,
+                secondMove: move
+            });
+        }
     }
 
     // 添加到移动历史（只有完整的回合才添加）
@@ -334,7 +344,9 @@ export function doMove(move, isWenSecondMove = false) {
     }
 
     // 正常结束回合
-    if (state.gameMode === 'online') network.sendMove(move);
+    if (state.gameMode === 'online' && !isWenSecondMove) {
+        network.sendMove(move);
+    }
     state.setCurrentTurn(oppColor);
     state.setWenContinueState(null);
     renderPieces();
@@ -387,9 +399,22 @@ export function receiveMove(move) {
         console.log('收到无效移动：不是对方回合');
         return;
     }
-    state.setBoard(makeMove(state.board, move));
-    state.setLastMove(move);
-    state.pushMoveHistory(move);
+
+    // 处理轀的双重移动
+    if (move.type === 'wen_double_move') {
+        // 执行第一次移动
+        state.setBoard(makeMove(state.board, move.firstMove));
+        // 执行第二次移动
+        state.setBoard(makeMove(state.board, move.secondMove));
+        state.setLastMove(move.secondMove);
+        state.pushMoveHistory(move.firstMove);
+        state.pushMoveHistory(move.secondMove);
+    } else {
+        // 普通移动
+        state.setBoard(makeMove(state.board, move));
+        state.setLastMove(move);
+        state.pushMoveHistory(move);
+    }
 
     let oppColor = state.currentTurn === RED ? BLACK : RED;
     if (isInCheck(state.board, oppColor)) updateStatus("将军！"); else updateStatus("");
