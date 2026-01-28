@@ -45,7 +45,7 @@ export function getDynamicSearchDepth(currBoard) {
 /*     if (redCount <= 3 || blackCount <= 3) return 8; */
     if (pieceCount < 6) return 8;
     if (pieceCount < 16) return 7;
-    if (pieceCount < 18) return 6;
+    if (pieceCount < 22) return 6;
     return SEARCH_DEPTH;
 }
 
