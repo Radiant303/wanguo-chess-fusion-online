@@ -41,9 +41,9 @@ export function getDynamicSearchDepth(currBoard) {
         }
     }
 
-    // 当某方棋子数量≤5个时，深度8
-    if (redCount <= 5 || blackCount <= 5) return 8;
-    if (pieceCount < 10) return 8;
+    // 当某方棋子数量≤3个时，深度8
+/*     if (redCount <= 3 || blackCount <= 3) return 8; */
+    if (pieceCount < 6) return 8;
     if (pieceCount < 16) return 7;
     if (pieceCount < 18) return 6;
     return SEARCH_DEPTH;

@@ -73,13 +73,13 @@ export const PIECE_VALUES = {
     [R_ELEPHANT]: 200, [B_ELEPHANT]: 200,          // 象/相价值
     [R_HORSE]: 450, [B_HORSE]: 450,                // 马价值
     [R_CAR]: 900, [B_CAR]: 900,                    // 车价值
-    [R_CANNON]: 500, [B_CANNON]: 500,              // 炮价值
+    [R_CANNON]: 800, [B_CANNON]: 800,              // 炮价值
     [R_PAWN]: 100, [B_PAWN]: 100,                  // 兵/卒价值
-    [R_UPGRADE_CANNON]: 500, [B_UPGRADE_CANNON]: 500, // 升级炮价值
+    [R_UPGRADE_CANNON]: 800, [B_UPGRADE_CANNON]: 800, // 升级炮价值
     [R_UPGRADE_CAR]: 900, [B_UPGRADE_CAR]: 900,       // 升级车价值
     [R_HORSE_CAR]: 1350, [B_HORSE_CAR]: 1350,           // 车马价值
-    [R_CHONG]: 600, [B_CHONG]: 600,                   // 铳价值(兵+炮)
-    [R_KUI]: 1400, [B_KUI]: 1400,                       // 軳价值(车+炮)
+    [R_CHONG]: 900, [B_CHONG]: 900,                   // 铳价值(兵+炮)
+    [R_KUI]: 1700, [B_KUI]: 1700,                       // 軳价值(车+炮)
     [R_JUN]: 650, [B_JUN]: 650,                       // 骏价值(马+象)
     [R_WEN]: 1000, [B_WEN]: 1000,                     // 轀价值(车+兵，连续移动但无法后退)
     [R_SHI]: 350, [B_SHI]: 350                        // 仕价值(士+士，全盘斜走但锁定将帅)
