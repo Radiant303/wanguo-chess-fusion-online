@@ -292,25 +292,13 @@ export function doMove(move, isWenSecondMove = false) {
     state.setLastMove(move);
     state.setSelectedPiece(null);
 
-    // 如果是轀的第二次移动，清理连续移动状态并发送组合移动
+    // 如果是轀的第二次移动，清理连续移动状态
     if (isWenSecondMove) {
-        const wenState = state.wenContinueState;
         state.setWenContinueState(null);
-        
-        // 联机模式：发送包含两次移动的组合消息
-        if (state.gameMode === 'online' && wenState) {
-            network.sendMove({
-                type: 'wen_double_move',
-                firstMove: wenState.firstMove,
-                secondMove: move
-            });
-        }
     }
 
-    // 添加到移动历史（只有完整的回合才添加）
-    if (!isWenSecondMove || !move.canContinue) {
-        state.pushMoveHistory(move);
-    }
+    // 添加到移动历史
+    state.pushMoveHistory(move);
 
     let oppColor = state.currentTurn === RED ? BLACK : RED;
     if (isInCheck(state.board, oppColor)) updateStatus("将军！"); else updateStatus("");
@@ -335,6 +323,17 @@ export function doMove(move, isWenSecondMove = false) {
                 firstMove: move
             });
             state.setSelectedPiece(move.to);
+            
+            // 联机模式：轀第一次移动也要发送棋盘状态（但不切换回合）
+            if (state.gameMode === 'online') {
+                network.sendMove({
+                    board: state.board,
+                    lastMove: move,
+                    currentTurn: state.currentTurn,  // 保持当前回合不变
+                    wenContinue: true  // 标记轀正在连续移动
+                });
+            }
+            
             renderPieces();
             updateStatus("轀必须完成第二次移动！请选择目标位置");
             // 调用scheduleNextMove让AI处理连续移动
@@ -344,10 +343,17 @@ export function doMove(move, isWenSecondMove = false) {
     }
 
     // 正常结束回合
-    if (state.gameMode === 'online' && !isWenSecondMove) {
-        network.sendMove(move);
-    }
     state.setCurrentTurn(oppColor);
+    
+    // 联机模式：发送完整棋盘状态
+    if (state.gameMode === 'online') {
+        network.sendMove({
+            board: state.board,
+            lastMove: move,
+            currentTurn: oppColor
+        });
+    }
+    
     state.setWenContinueState(null);
     renderPieces();
     if (!state.gameOver) scheduleNextMove();
@@ -392,28 +398,41 @@ function getWenContinueMoves(pos, color) {
 }
 
 // 接收对手走法
-export function receiveMove(move) {
+export function receiveMove(data) {
+    console.log('收到对手移动:', data);
+    
     if (state.gameOver) return;
-    let expectedColor = state.currentTurn;
-    if (expectedColor === state.myColor) {
-        console.log('收到无效移动：不是对方回合');
-        return;
+    
+    // 如果对方轀正在连续移动，允许接收消息（不检查回合）
+    if (!data.wenContinue) {
+        // 检查是否是对方回合
+        let expectedColor = state.currentTurn;
+        if (expectedColor === state.myColor) {
+            console.log('收到无效移动：不是对方回合', 'currentTurn:', state.currentTurn, 'myColor:', state.myColor);
+            return;
+        }
     }
 
-    // 处理轀的双重移动
-    if (move.type === 'wen_double_move') {
-        // 执行第一次移动
-        state.setBoard(makeMove(state.board, move.firstMove));
-        // 执行第二次移动
-        state.setBoard(makeMove(state.board, move.secondMove));
-        state.setLastMove(move.secondMove);
-        state.pushMoveHistory(move.firstMove);
-        state.pushMoveHistory(move.secondMove);
+    // 直接使用接收到的棋盘状态
+    if (data.board) {
+        state.setBoard(data.board);
+        console.log('更新棋盘状态');
+    }
+    
+    // 设置最后一步移动（用于显示移动轨迹）
+    if (data.lastMove) {
+        state.setLastMove(data.lastMove);
+        console.log('设置最后移动:', data.lastMove);
+    }
+    
+    // 设置回合
+    if (data.currentTurn !== undefined) {
+        console.log('设置回合:', data.currentTurn);
+        state.setCurrentTurn(data.currentTurn);
     } else {
-        // 普通移动
-        state.setBoard(makeMove(state.board, move));
-        state.setLastMove(move);
-        state.pushMoveHistory(move);
+        // 兼容旧版本：如果没有currentTurn，则切换回合
+        let oppColor = state.currentTurn === RED ? BLACK : RED;
+        state.setCurrentTurn(oppColor);
     }
 
     let oppColor = state.currentTurn === RED ? BLACK : RED;
@@ -426,9 +445,14 @@ export function receiveMove(move) {
         return;
     }
 
-    state.setCurrentTurn(oppColor);
     renderPieces();
-    updateStatus(state.currentTurn === state.myColor ? "轮到你走棋" : "等待对手...");
+    
+    // 根据轀连续移动状态显示不同提示
+    if (data.wenContinue) {
+        updateStatus("对手轀正在连续移动中...");
+    } else {
+        updateStatus(state.currentTurn === state.myColor ? "轮到你走棋" : "等待对手...");
+    }
 }
 
 // 安排下一步移动

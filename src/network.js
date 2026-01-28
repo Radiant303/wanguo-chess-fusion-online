@@ -28,22 +28,24 @@ export function updateServerUrl() {
         state.setWsServerUrl(url);
         log(`服务器地址已设置为: ${url}`, 'info');
     } else {
-        state.setWsServerUrl('ws://localhost:9191');
-        log('服务器地址已重置为默认: ws://localhost:9191', 'info');
+        state.setWsServerUrl('ws://175.24.198.214:9191');
+        log('服务器地址已重置为默认: ws://175.24.198.214:9191', 'info');
     }
 }
 
 // 获取网络信息
 export function getNetworkInfo() {
-    return `局域网联机: ws://localhost:9191`.trim();
+    return `局域网联机: ws://175.24.198.214:9191`.trim();
 }
 
 // 发送消息到服务器
 export function sendToServer(data) {
     if (state.wsConnection && state.wsConnection.readyState === WebSocket.OPEN) {
+        console.log('发送消息到服务器:', data.type, data);
         state.wsConnection.send(JSON.stringify(data));
     } else {
         log('未连接到服务器', 'highlight');
+        console.error('WebSocket未连接，无法发送消息');
     }
 }
 
@@ -95,10 +97,13 @@ export function addChatMessage(msg, isMe) {
     container.scrollTop = container.scrollHeight;
 }
 
-// 发送走法到服务器
-export function sendMove(move) {
+// 发送走法到服务器（发送完整棋盘状态）
+export function sendMove(moveData) {
     if (state.connectionState === 'connected') {
-        sendToServer({ type: 'move', move: move });
+        sendToServer({ 
+            type: 'move', 
+            move: moveData  // 直接发送完整的移动数据对象
+        });
     }
 }
 
@@ -223,7 +228,7 @@ export function handleServerMessage(data, gameCallbacks) {
             break;
 
         case 'move':
-            if (gameCallbacks.receiveMove) gameCallbacks.receiveMove(data.move);
+            if (gameCallbacks.receiveMove) gameCallbacks.receiveMove(data);
             break;
 
         case 'chat':

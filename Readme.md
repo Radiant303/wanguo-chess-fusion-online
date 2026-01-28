@@ -57,7 +57,7 @@ python 联机.py
 ```bash
 python -m http.server 8000
 ```
-然后在浏览器访问 `http://localhost:8000/index.html`。
+然后在浏览器访问 `http://175.24.198.214:8000/index.html`。
 
 **方式 B (VS Code)**:
 使用 Live Server 插件右键点击 `index.html` 选择 "Open with Live Server"。

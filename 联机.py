@@ -170,28 +170,36 @@ class ChessServer:
             room.game_started = False
             logger.info(f"客人离开房间: {room_id}")
     
-    async def handle_move(self, websocket: websockets.WebSocketServerProtocol, move: dict):
-        """处理走棋"""
+    async def handle_move(self, websocket: websockets.WebSocketServerProtocol, move_data: dict):
+        """处理走棋（包含完整棋盘状态）"""
         if websocket not in self.player_room:
+            logger.warning("收到移动消息，但玩家不在任何房间")
             return
         
         room_id = self.player_room[websocket]
         room = self.rooms.get(room_id)
         
         if not room or not room.is_full:
+            logger.warning(f"房间 {room_id} 不存在或未满")
             return
         
-        # 转发给对手
+        logger.info(f"房间 {room_id} 收到移动: wenContinue={move_data.get('wenContinue', False)}")
+        
+        # 转发给对手（包含完整棋盘状态）
+        message = {
+            "type": "move",
+            "board": move_data.get("board"),  # 完整棋盘状态
+            "lastMove": move_data.get("lastMove"),  # 最后一步移动
+            "currentTurn": move_data.get("currentTurn"),  # 当前回合
+            "wenContinue": move_data.get("wenContinue", False)  # 轀连续移动标记
+        }
+        
         if room.host.websocket == websocket:
-            await self.send_message(room.guest.websocket, {
-                "type": "move",
-                "move": move
-            })
+            logger.info(f"转发移动给客人")
+            await self.send_message(room.guest.websocket, message)
         elif room.guest.websocket == websocket:
-            await self.send_message(room.host.websocket, {
-                "type": "move",
-                "move": move
-            })
+            logger.info(f"转发移动给房主")
+            await self.send_message(room.host.websocket, message)
     
     async def handle_chat(self, websocket: websockets.WebSocketServerProtocol, message: str):
         """处理聊天消息"""
@@ -326,7 +334,7 @@ async def main():
     ):
         logger.info(f"象棋联机服务器已启动")
         logger.info(f"监听地址: ws://{HOST}:{PORT}")
-        logger.info(f"本机地址: ws://localhost:{PORT}")
+        logger.info(f"本机地址: ws://175.24.198.214:{PORT}")
         logger.info("按 Ctrl+C 停止服务器")
         
         await asyncio.Future()  # 永久运行
