@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AIMAX 智能象棋 - 联机版</title>
+    <style>
+        :root {
+            --bg-color: #f2f2ef;
+            /* 柔和米灰背景 */
+            --panel-bg: #ffffff;
+            /* 纯白面板 */
+            --text-primary: #2c2c2c;
+            /* 深灰文字 */
+            --text-secondary: #666666;
+            --accent-red: #c0392b;
+            /* 印泥红 */
+            --accent-black: #262626;
+            /* 纯墨色 */
+            --border-color: #e0e0e0;
+            --focus-ring: #dcdcdc;
+
+            /* 棋盘尺寸常量 */
+            --cell-size: 60px;
+            --board-width: 540px;
+            --board-height: 600px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            /* 移动端顶部对齐 */
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 20px 0;
+        }
+
+        /* 主布局容器 */
+        .main-layout {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        /* 移动端适配布局 */
+        @media (max-width: 1250px) {
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                padding: 10px;
+            }
+
+            .rules-panel {
+                width: 100% !important;
+                order: 3;
+                /* 手机端放在最下面 */
+                margin-top: 10px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .rules-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .rules-list li {
+                flex: 1 1 45%;
+                max-width: 300px;
+            }
+
+            .board-wrapper {
+                order: 1;
+            }
+
+            .controls {
+                order: 2;
+                width: 100%;
+                max-width: 600px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .rules-list li {
+                flex: 1 1 100%;
+            }
+        }
+
+        /* 规则面板 - 左侧 */
+        .rules-panel {
+            width: 350px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: linear-gradient(145deg, #ffffff, #fcfcfc);
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .rules-panel h3 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-primary);
+            padding-left: 10px;
+            font-weight: 700;
+        }
+
+        .rules-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rules-list li {
+            font-size: 13px;
+            color: #555;
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            line-height: 1.5;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .rules-list li:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-color: #e0e0e0;
+            background: #fff;
+        }
+
+        .rules-list li.active {
+            background: #fff;
+            border-color: var(--accent-red);
+            box-shadow: 0 4px 12px rgba(192, 57, 43, 0.15);
+            transform: translateX(4px);
+        }
+
+        .rules-list strong {
+            color: var(--accent-red);
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .rule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .toggle-icon {
+            font-size: 10px;
+            color: #bbb;
+            transition: transform 0.3s ease;
+        }
+
+        .rules-list li.active .toggle-icon {
+            transform: rotate(180deg);
+            color: var(--accent-red);
+        }
+
+        .rule-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease;
+            opacity: 0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-top: 0;
+            border-top: 1px dashed transparent;
+            text-align: justify;
+        }
+
+        .rules-list li.active .rule-details {
+            max-height: 300px;
+            opacity: 1;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top-color: #eee;
+        }
+
+        /* 面板通用样式 - 极简卡片风格 */
+        .card-panel {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        /* 左侧棋盘区域 */
+        .board-wrapper {
+            position: relative;
+            padding: 20px;
+            /* 保持容器大小适应内容 */
+            width: calc(var(--board-width) + 40px);
+            height: calc(var(--board-height) + 150px);
+            /* 留出上下玩家标签空间 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        /* 移动端棋盘容器适配 */
+        @media (max-width: 650px) {
+            .board-wrapper {
+                width: 100% !important;
+                /* 覆盖默认固定宽度 */
+                height: auto !important;
+                /* 让高度自适应 */
+                padding: 10px 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                overflow: hidden;
+                /* 防止溢出 */
+            }
+
+            .board-container {
+                /* 缩放由 JS 处理，这里只需保证初始定位 */
+                margin-top: 10px;
+                transform-origin: top center;
+            }
+        }
+
+        /* 棋盘内部容器 */
+        .board-container {
+            position: relative;
+            width: var(--board-width);
+            height: var(--board-height);
+            user-select: none;
+            background: rgba(240, 230, 210, 0.3);
+            /* 极淡的纸色背景 */
+            outline: 2px solid #5a4a42;
+            /* 棋盘外框 */
+            margin: 10px 0;
+        }
+
+        .river {
+            position: absolute;
+            top: 275px;
+            left: 2px;
+            right: 2px;
+            height: 56px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-family: "KaiTi", "STKaiti", serif;
+            font-size: 28px;
+            color: #8b5a2b;
+            /* 铜褐色 */
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 右侧控制区域 */
+        .controls {
+            width: 400px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 100%;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        /* 状态条 */
+        .status-box {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            border: 1px solid #eee;
+        }
+
+        /* 联机面板 */
+        .online-panel {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .online-panel h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .room-info {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+
+        input:focus {
+            border-color: #999;
+        }
+
+        /* 按钮设计 - 扁平化 */
+        .btn {
+            padding: 10px 18px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            color: #444;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            font-weight: 500;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            background: #f5f5f5;
+        }
+
+        .btn.primary {
+            background: var(--accent-black);
+            color: #fff;
+            border-color: var(--accent-black);
+        }
+
+        .btn.active {
+            background: var(--accent-black);
+            color: #fff;
+            border-color: var(--accent-black);
+        }
+
+        .btn.danger {
+            background: #fff;
+            color: #c0392b;
+            border-color: #e74c3c;
+        }
+
+        .btn.danger:hover {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-row .btn {
+            flex: 1;
+        }
+
+        /* 连接状态 */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.connected {
+            background: #27ae60;
+        }
+
+        .status-dot.waiting {
+            background: #f39c12;
+        }
+
+        .status-dot.disconnected {
+            background: #e74c3c;
+        }
+
+        /* 聊天 */
+        .chat-panel {
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .chat-messages {
+            height: 100px;
+            overflow-y: auto;
+            font-size: 13px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        /* 日志 */
+        .log-panel {
+            flex: 1;
+            min-height: 120px;
+            max-height: 120px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #555;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px solid #f5f5f5;
+            padding-bottom: 2px;
+        }
+
+        .log-highlight {
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        .log-info {
+            color: #7f8c8d;
+        }
+
+        /* 棋盘元素 */
+        .grid-row,
+        .grid-col {
+            position: absolute;
+            background-color: #5a4a42;
+        }
+
+        /* 深褐色线条 */
+        .grid-row {
+            height: 1px;
+            left: 4px;
+            right: 4px;
+            transform: scaleY(0.8);
+        }
+
+        .grid-col {
+            width: 1px;
+            top: 4px;
+            bottom: 4px;
+            transform: scaleX(0.8);
+        }
+
+        .palace-line {
+            position: absolute;
+            background-color: #5a4a42;
+            height: 1px;
+            transform-origin: top left;
+        }
+
+        /* 玩家指示标 */
+        .player-tag {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            background: #eee;
+            color: #888;
+            margin: 5px 0;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .player-tag.active-red {
+            background: #ffdcdc;
+            color: #c0392b;
+            border: 1px solid #e74c3c;
+            box-shadow: 0 2px 8px rgba(192, 57, 43, 0.1);
+        }
+
+        .player-tag.active-black {
+            background: #e6e6e6;
+            color: #000;
+            border: 1px solid #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 棋子样式 - 立体木纹感 */
+        .piece {
+            width: 54px;
+            /* 略小于60 */
+            height: 54px;
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "KaiTi", "STKaiti", serif;
+            font-size: 28px;
+            font-weight: bold;
+            background-color: #fcfcfc;
+            /* 暖色调投影，完全去除冷灰色感 */
+            box-shadow:
+                0 2px 5px rgba(90, 70, 60, 0.2),
+                inset 0 -3px 0 rgba(90, 70, 60, 0.1);
+            border: 2px solid #e6dcd0;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+
+        .piece:active {
+            transform: scale(0.95);
+        }
+
+        .piece.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.4), 0 4px 12px rgba(90, 70, 60, 0.2);
+            z-index: 20;
+        }
+
+        .piece.red {
+            color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .piece.black {
+            color: #2c2c2c;
+            border-color: #2c2c2c;
+        }
+
+        /* 轨迹 */
+        .move-trace {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .trace-from {
+            background-color: rgba(60, 60, 60, 0.2);
+        }
+
+        .trace-to {
+            background-color: rgba(192, 57, 43, 0.5);
+            width: 14px;
+            height: 14px;
+        }
+
+        /* 合法落点提示 */
+        .legal-move-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: rgba(39, 174, 96, 0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25;
+            pointer-events: none;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 吃子提示 */
+        .legal-move-capture {
+            position: absolute;
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(48, 207, 0, 0.616);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+
+
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            /* 纯黑半透明 */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: white;
+            padding: 24px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .modal p {
+            font-size: 16px;
+            margin: 20px 0;
+            color: #555;
+        }
+
+        .check-warning-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(44, 44, 44, 0.9);
+            color: #fff;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .check-warning-overlay::before {
+            content: "";
+            font-size: 24px;
+        }
+
+        .check-warning-overlay.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* 红色闪烁警告动画 */
+        @keyframes flash-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 20px 10px rgba(231, 76, 60, 0.5);
+                border-color: #e74c3c;
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+
+        .flash-red {
+            animation: flash-red 0.5s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-layout">
+        <!-- 左侧规则面板 -->
+        <div class="card-panel rules-panel">
+            <h3>特殊融合规则</h3>
+            <ul class="rules-list" id="rulesList">
+                <!-- 列表项将通过点击展开 -->
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>兵 + 兵 = 炮</strong></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>陈胜、吴广领导秦末农民起义。</strong><br>
+                        公元前209年，陈胜、吴广等戍边士卒在大泽乡因大雨延误行期，被迫揭竿而起，发动了中国历史上第一次大规模农民起义，沉重打击了秦王朝的统治根基。
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>兵 + 马 = 车</strong></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>卫青与霍去病北击匈奴。</strong><br>
+                        汉武帝时期，卫青、霍去病先后率军出击匈奴，卫青收复河朔之地，霍去病斩获匈奴主力、封狼居胥，二人联手重创匈奴势力，打通河西走廊，巩固了汉朝北方疆域。
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>兵 + 炮 = 铳</strong> (隔1或2子吃)</div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>义和团与清军部分力量联合抗洋。</strong><br>
+                        19世纪末，义和团运动兴起，以“扶清灭洋”为口号反抗列强侵略，后期与部分清军形成临时同盟，在天津、北京等地与八国联军展开激战，是近代中国人民反抗外来侵略的重要组成部分。
+                        <br>
+                        <strong>升级版的炮（铳）可以隔着一个子吃，也可以隔着两个子吃。</strong>
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>马 + 车 = 骠</strong> (兼具马车走法，会蹩腿)</div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>薛仁贵与唐军主力征西。</strong><br>
+                        唐朝初年，薛仁贵追随唐军出征西域，凭借骁勇善战立下赫赫战功，先后参与平定西突厥、征伐高句丽等战事，“三箭定天山”便是其经典战绩，为唐朝稳定西域局势作出重要贡献。
+                        <br>
+                        <strong>升级版的马（骠）兼具马和车的走法，但会蹩腿。</strong>
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>马 + 象 = 骏</strong> (兼具马象走法，会蹩腿，能过河)</div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>岳飞与韩世忠联手抗金。</strong><br>
+                        南宋时期，金兵南下入侵，岳飞率领岳家军、韩世忠统领水军，分别在郾城大捷、黄天荡之战等战役中重创金军，二人同为南宋抗金名将，坚守江淮防线，力保南宋半壁江山。
+                        <br>
+                        <strong>升级版的马（骏）兼具马和象的走法，但会蹩腿，且能过河。</strong>
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>车 + 炮 = 軳</strong> (水平远程打击，无上下)</div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>辽沈战役中东北野战军主力与炮兵协同作战。</strong><br>
+                        1948年，东北野战军发起辽沈战役，主力部队与配属炮兵部队密切配合，先后攻克锦州、长春、沈阳等重镇，彻底解放东北全境，为全国解放战争的胜利奠定基础。
+                        <br>
+                        <strong>升级版的车（軳）水平线上可以隔着任意子吃，但失去上下移动能力。</strong>
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>车 + 兵 = 轀</strong> (兵走法能动两格，移两次)</div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>刘邓大军千里跃进大别山。</strong><br>
+                        1947年，刘伯承、邓小平率领晋冀鲁豫野战军主力，突破国民党军黄河防线，千里跃进大别山，深入中原腹地，揭开了中国人民解放军战略反攻的序幕。
+                        <br>
+                        <strong>升级版的兵（轀）每次最多可以移动两格，可以移动两次(必须移动两次)。</strong>
+                    </div>
+                </li>
+                <li onclick="toggleRule(this)">
+                    <div class="rule-header">
+                        <div><strong>士 + 士 = 仕</strong> (全盘斜走一格，锁定己方将帅)</div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="rule-details">
+                        <strong>1936年张学良、杨虎城发动西安事变。</strong><br>
+                        为逼迫蒋介石停止内战、联共抗日，张学良、杨虎城在西安扣押蒋介石，发动“兵谏”，后经多方斡旋事变和平解决，成为扭转时局的关键，推动了抗日民族统一战线的初步形成。
+                        <br>
+                        <strong>升级版的士（仕）可以出九宫格斜着走，但是己方存在仕时，己方将帅失去移动能力。</strong>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 棋盘区域 -->
+        <div class="card-panel board-wrapper">
+            <!-- 上方玩家 -->
+            <div class="player-tag" id="topPlayerIndicator">黑方 (等待加入)</div>
+
+            <!-- 棋盘(600x540) -->
+            <div class="board-container" id="boardArea">
+                <div class="river">楚 河 汉 界</div>
+                <div id="board" class="board"></div>
+                <!-- 棋子层 -->
+                <div id="piecesLayer" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
+
+                <!-- 盘面警告文字 -->
+                <div id="checkWarningOverlay" class="check-warning-overlay">必须阻止将军！</div>
+            </div>
+
+            <!-- 下方玩家 -->
+            <div class="player-tag active-red" id="bottomPlayerIndicator">红方 (你)</div>
+        </div>
+
+        <!-- 右侧控制 -->
+        <div class="card-panel controls">
+            <h1>AIMAX 象棋</h1>
+
+            <div class="status-box" id="statusText">准备就绪</div>
+
+            <!-- 模式选择 -->
+            <div>
+                <label style="font-size:12px; color:#888; display:block; margin-bottom:6px;">对战模式</label>
+                <div class="btn-row">
+                    <button class="btn" id="btnOnline" onclick="setMode('online')">联机</button>
+                    <button class="btn" id="btnAiVsAi" onclick="setMode('ai_vs_ai')">观战</button>
+                    <button class="btn active" id="btnPlayerVsAi" onclick="setMode('player_vs_ai')">人机</button>
+                </div>
+            </div>
+
+            <!-- 联机功能区 -->
+            <div class="online-panel">
+                <h3>联机大厅</h3>
+                <div class="room-info" style="margin-bottom: 8px;">
+                    <input type="text" id="serverUrlInput" placeholder="服务器地址 (默认: ws://localhost:9191)"
+                        style="font-size: 12px;">
+                    <button class="btn" onclick="updateServerUrl()"
+                        style="padding: 8px 12px; font-size: 12px;">设置</button>
+                </div>
+                <div class="room-info">
+                    <input type="text" id="roomIdInput" placeholder="请输入房间号..." maxlength="10">
+                    <button class="btn primary" onclick="createRoom()" id="btnCreate">创建</button>
+                    <button class="btn" onclick="joinRoom()" id="btnJoin">加入</button>
+                </div>
+                <div class="connection-status">
+                    <span class="status-dot disconnected" id="statusDot"></span>
+                    <span id="connectionText">未连接</span>
+                    <button class="btn danger" onclick="disconnect()" id="btnDisconnect"
+                        style="display:none; padding: 4px 8px; font-size: 12px; margin-left: auto;">断开</button>
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="btn-row">
+                <button class="btn" onclick="restartGame()">重新开始</button>
+            </div>
+
+            <!-- 聊天 -->
+            <div class="chat-panel" id="chatPanel" style="display:none;">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="room-info" style="margin-bottom:0;">
+                    <input type="text" id="chatInput" placeholder="发送消息..."
+                        onkeypress="if(event.key==='Enter')sendChat()">
+                    <button class="btn" onclick="sendChat()">发送</button>
+                </div>
+            </div>
+
+            <!-- 日志 -->
+            <div class="log-panel" id="logPanel">
+                <div style="color: #bbb; text-align: center; margin-top: 10px;">等待开始...</div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- 弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h2 id="modalTitle">提示</h2>
+            <p id="modalMessage">内容</p>
+            <div class="modal-btn-group">
+                <button class="btn primary" onclick="closeModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入模块化逻辑 -->
+    <script type="module" src="src/index.js"></script>
+
+    <!-- 移动端适配脚本 -->
+    <script>
+        function fitBoardToScreen() {
+            const boardContainer = document.getElementById('boardArea');
+            const boardWrapper = document.querySelector('.board-wrapper');
+            if (!boardContainer) return;
+
+            const windowWidth = window.innerWidth;
+            const boardBaseWidth = 540; // 棋盘基准宽度
+            const boardBaseHeight = 600; // 棋盘基准高度
+
+            // 移动端阈值，稍微放宽一点
+            if (windowWidth < 680) {
+                // 计算可用宽度 (留出边距)
+                const availableWidth = windowWidth - 20;
+                const scale = Math.min(availableWidth / boardBaseWidth, 1);
+
+                if (scale < 1) {
+                    boardContainer.style.transform = `scale(${scale})`;
+                    // 计算缩放后减少的高度，用于向上拉取底部内容
+                    // 原始高度 600, 视觉高度 600*scale. 空白 = 600 * (1-scale)
+                    const marginBottom = -1 * boardBaseHeight * (1 - scale);
+                    boardContainer.style.marginBottom = `${marginBottom}px`;
+                } else {
+                    boardContainer.style.transform = 'none';
+                    boardContainer.style.marginBottom = '0';
+                }
+            } else {
+                // 桌面端重置
+                boardContainer.style.transform = 'none';
+                boardContainer.style.marginBottom = '0';
+            }
+        }
+
+        function toggleRule(liElement) {
+            // 如果已经打开，则关闭
+            if (liElement.classList.contains('active')) {
+                liElement.classList.remove('active');
+            } else {
+                // 关闭其他所有打开的
+                const allItems = document.querySelectorAll('.rules-list li');
+                allItems.forEach(item => item.classList.remove('active'));
+                // 打开当前
+                liElement.classList.add('active');
+            }
+        }
+
+        // 初始化和监听
+        window.addEventListener('load', fitBoardToScreen);
+        window.addEventListener('resize', fitBoardToScreen);
+        // 立即尝试执行一次
+        fitBoardToScreen();
+    </script>
+</body>
+
+</html>
