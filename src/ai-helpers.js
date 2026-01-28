@@ -41,13 +41,12 @@ export function getDynamicSearchDepth(currBoard) {
         }
     }
 
-    // 当某方棋子数量≤3个时，深度8
-    if (redCount <= 3 || blackCount <= 3) return 8;
-
-    if (pieceCount < 6) return 8;      // 棋子少于6个，深度8
-    if (pieceCount < 10) return 7;      // 棋子少于10个，深度7
-    if (pieceCount < 12) return 6;     // 棋子少于12个，深度6
-    return SEARCH_DEPTH;               // 默认深度5
+    // 当某方棋子数量≤5个时，深度8
+    if (redCount <= 5 || blackCount <= 5) return 8;
+    if (pieceCount < 10) return 8;
+    if (pieceCount < 16) return 7;
+    if (pieceCount < 18) return 6;
+    return SEARCH_DEPTH;
 }
 
 // 检查是否为折返走法
