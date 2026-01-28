@@ -103,7 +103,7 @@ let connectionState = 'disconnected'; // 连接状态：disconnected, connected,
 // WebSocket 服务器配置
 // 本地测试: ws://localhost:8765
 // 局域网: ws://你的IP地址:8765 (例如 ws://192.168.1.100:8765)
-let WS_SERVER_URL = 'ws://175.24.198.214:9191'; // WebSocket服务器地址
+let WS_SERVER_URL = 'ws://localhost:9191'; // WebSocket服务器地址
 let wsConnection = null;     // WebSocket连接实例
 let reconnectAttempts = 0;   // 重连尝试次数
 const MAX_RECONNECT_ATTEMPTS = 3; // 最大重连尝试次数
@@ -1001,8 +1001,8 @@ function updateServerUrl() {
         WS_SERVER_URL = url;
         log(`服务器地址已设置为: ${url}`, 'info');
     } else {
-        WS_SERVER_URL = 'ws://175.24.198.214:9191';
-        log('服务器地址已重置为默认: ws://175.24.198.214:9191', 'info');
+        WS_SERVER_URL = 'ws://localhost:9191';
+        log('服务器地址已重置为默认: ws://localhost:9191', 'info');
     }
 }
 
@@ -1012,7 +1012,7 @@ function updateServerUrl() {
  */
 function getNetworkInfo() {
     return `
-局域网联机: ws://175.24.198.214:9191
+局域网联机: ws://localhost:9191
     `.trim();
 }
 

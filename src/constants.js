@@ -86,5 +86,5 @@ export const PIECE_VALUES = {
 };
 
 // ==================== 网络配置 ====================
-export const DEFAULT_WS_SERVER_URL = 'ws://175.24.198.214:9191';
+export const DEFAULT_WS_SERVER_URL = 'ws://localhost:9191';
 export const MAX_RECONNECT_ATTEMPTS = 3;

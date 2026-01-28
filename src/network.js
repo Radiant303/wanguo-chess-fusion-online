@@ -28,14 +28,14 @@ export function updateServerUrl() {
         state.setWsServerUrl(url);
         log(`服务器地址已设置为: ${url}`, 'info');
     } else {
-        state.setWsServerUrl('ws://175.24.198.214:9191');
-        log('服务器地址已重置为默认: ws://175.24.198.214:9191', 'info');
+        state.setWsServerUrl('ws://localhost:9191');
+        log('服务器地址已重置为默认: ws://localhost:9191', 'info');
     }
 }
 
 // 获取网络信息
 export function getNetworkInfo() {
-    return `局域网联机: ws://175.24.198.214:9191`.trim();
+    return `局域网联机: ws://localhost:9191`.trim();
 }
 
 // 发送消息到服务器
