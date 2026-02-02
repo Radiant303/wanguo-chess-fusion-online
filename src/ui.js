@@ -323,7 +323,7 @@ export function doMove(move, isWenSecondMove = false) {
                 firstMove: move
             });
             state.setSelectedPiece(move.to);
-            
+
             // 联机模式：轀第一次移动也要发送棋盘状态（但不切换回合）
             if (state.gameMode === 'online') {
                 network.sendMove({
@@ -333,7 +333,7 @@ export function doMove(move, isWenSecondMove = false) {
                     wenContinue: true  // 标记轀正在连续移动
                 });
             }
-            
+
             renderPieces();
             updateStatus("轀必须完成第二次移动！请选择目标位置");
             // 调用scheduleNextMove让AI处理连续移动
@@ -344,7 +344,7 @@ export function doMove(move, isWenSecondMove = false) {
 
     // 正常结束回合
     state.setCurrentTurn(oppColor);
-    
+
     // 联机模式：发送完整棋盘状态
     if (state.gameMode === 'online') {
         network.sendMove({
@@ -353,7 +353,7 @@ export function doMove(move, isWenSecondMove = false) {
             currentTurn: oppColor
         });
     }
-    
+
     state.setWenContinueState(null);
     renderPieces();
     if (!state.gameOver) scheduleNextMove();
@@ -400,9 +400,9 @@ function getWenContinueMoves(pos, color) {
 // 接收对手走法
 export function receiveMove(data) {
     console.log('收到对手移动:', data);
-    
+
     if (state.gameOver) return;
-    
+
     // 如果对方轀正在连续移动，允许接收消息（不检查回合）
     if (!data.wenContinue) {
         // 检查是否是对方回合
@@ -418,13 +418,13 @@ export function receiveMove(data) {
         state.setBoard(data.board);
         console.log('更新棋盘状态');
     }
-    
+
     // 设置最后一步移动（用于显示移动轨迹）
     if (data.lastMove) {
         state.setLastMove(data.lastMove);
         console.log('设置最后移动:', data.lastMove);
     }
-    
+
     // 设置回合
     if (data.currentTurn !== undefined) {
         console.log('设置回合:', data.currentTurn);
@@ -446,7 +446,7 @@ export function receiveMove(data) {
     }
 
     renderPieces();
-    
+
     // 根据轀连续移动状态显示不同提示
     if (data.wenContinue) {
         updateStatus("对手轀正在连续移动中...");

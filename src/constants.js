@@ -76,30 +76,30 @@ let random5 = Math.random() * 0.2 + 1.1;
 let random6 = Math.random() * 0.2 + 1.1;
 let random7 = Math.random() * 0.2 + 1.1;
 //基础棋子价值
-let R_KING = 10000*random1, B_KING = 10000*random1;// 王/帅价值最高
-let R_ADVISOR = 200*random2, B_ADVISOR = 200*random2; // 士价值
-let R_ELEPHANT = 200*random3, B_ELEPHANT = 200*random3; // 象/相价值
-let R_HORSE = 350*random4, B_HORSE = 350*random4;// 马价值
-let R_CAR = 900*random5, B_CAR = 900*random5;// 车价值
-let R_CANNON = 800*random6, B_CANNON = 800*random6;  // 炮价值
-let R_PAWN = 100*random7, B_PAWN = 100*random7; // 兵/卒价值
+let R_KING_v = 10000*random1, B_KING_v = 10000*random1;// 王/帅价值最高
+let R_ADVISOR_v = 200*random2, B_ADVISOR_v = 200*random2; // 士价值
+let R_ELEPHANT_v = 200*random3, B_ELEPHANT_v = 200*random3; // 象/相价值
+let R_HORSE_v = 350*random4, B_HORSE_v = 350*random4;// 马价值
+let R_CAR_v = 900*random5, B_CAR_v = 900*random5;// 车价值
+let R_CANNON_v = 800*random6, B_CANNON_v = 800*random6;  // 炮价值
+let R_PAWN_v = 100*random7, B_PAWN_v = 100*random7; // 兵/卒价值
 
 export const PIECE_VALUES = {
-    [R_KING]: R_KING, [B_KING]: B_KING,              // 王/帅价值最高
-    [R_ADVISOR]: R_ADVISOR, [B_ADVISOR]: B_ADVISOR,            // 士价值
-    [R_ELEPHANT]: R_ELEPHANT, [B_ELEPHANT]: B_ELEPHANT,          // 象/相价值
-    [R_HORSE]: R_HORSE, [B_HORSE]: B_HORSE,                // 马价值
-    [R_CAR]: R_CAR, [B_CAR]: B_CAR,                    // 车价值
-    [R_CANNON]: R_CANNON, [B_CANNON]: B_CANNON,              // 炮价值
-    [R_PAWN]: R_PAWN, [B_PAWN]: B_PAWN,                  // 兵/卒价值
-    [R_UPGRADE_CANNON]: R_CANNON, [B_UPGRADE_CANNON]: B_PAWN, // 升级炮价值
-    [R_UPGRADE_CAR]: R_CAR, [B_UPGRADE_CAR]: B_CAR,       // 升级车价值
-    [R_HORSE_CAR]: R_CAR+R_HORSE, [B_HORSE_CAR]: B_CAR+B_HORSE,           // 车马价值
-    [R_CHONG]: R_PAWN+R_CANNON, [B_CHONG]: B_PAWN+B_CANNON,                   // 铳价值(兵+炮)
-    [R_KUI]: R_CAR+R_CANNON, [B_KUI]: B_CAR+B_CANNON,                       // 軳价值(车+炮)
-    [R_JUN]: R_HORSE+R_ELEPHANT, [B_JUN]: B_HORSE+B_ELEPHANT,                       // 骏价值(马+象)
-    [R_WEN]: R_CAR+R_PAWN, [B_WEN]: B_CAR+B_PAWN,                     // 轀价值(车+兵，连续移动但无法后退)
-    [R_SHI]: R_ADVISOR+R_ADVISOR, [B_SHI]: B_ADVISOR+B_ADVISOR                        // 仕价值(士+士，全盘斜走但锁定将帅)
+    [R_KING]: R_KING_v, [B_KING]: B_KING_v,              // 王/帅价值最高
+    [R_ADVISOR]: R_ADVISOR_v, [B_ADVISOR]: B_ADVISOR_v,            // 士价值
+    [R_ELEPHANT]: R_ELEPHANT_v, [B_ELEPHANT]: B_ELEPHANT_v,          // 象/相价值
+    [R_HORSE]: R_HORSE_v, [B_HORSE]: B_HORSE_v,                // 马价值
+    [R_CAR]: R_CAR_v, [B_CAR]: B_CAR_v,                    // 车价值
+    [R_CANNON]: R_CANNON_v, [B_CANNON]: B_CANNON_v,              // 炮价值
+    [R_PAWN]: R_PAWN_v, [B_PAWN]: B_PAWN_v,                  // 兵/卒价值
+    [R_UPGRADE_CANNON]: R_CANNON_v, [B_UPGRADE_CANNON]: B_PAWN_v, // 升级炮价值
+    [R_UPGRADE_CAR]: R_CAR_v, [B_UPGRADE_CAR]: B_CAR_v,       // 升级车价值
+    [R_HORSE_CAR]: R_CAR_v+R_HORSE_v, [B_HORSE_CAR]: B_CAR_v+B_HORSE_v,           // 车马价值
+    [R_CHONG]: R_PAWN_v+R_CANNON_v, [B_CHONG]: B_PAWN_v+B_CANNON_v,                   // 铳价值(兵+炮)
+    [R_KUI]: R_CAR_v+R_CANNON_v, [B_KUI]: B_CAR_v+B_CANNON_v,                       // 軳价值(车+炮)
+    [R_JUN]: R_HORSE_v+R_ELEPHANT_v, [B_JUN]: B_HORSE_v+B_ELEPHANT_v,                       // 骏价值(马+象)
+    [R_WEN]: R_CAR_v+R_PAWN_v, [B_WEN]: B_CAR_v+B_PAWN_v,                     // 轀价值(车+兵，连续移动但无法后退)
+    [R_SHI]: R_ADVISOR_v+R_ADVISOR_v, [B_SHI]: B_ADVISOR_v+B_ADVISOR_v                        // 仕价值(士+士，全盘斜走但锁定将帅)
 };
 
 // ==================== 网络配置 ====================

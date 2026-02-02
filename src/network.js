@@ -100,8 +100,8 @@ export function addChatMessage(msg, isMe) {
 // 发送走法到服务器（发送完整棋盘状态）
 export function sendMove(moveData) {
     if (state.connectionState === 'connected') {
-        sendToServer({ 
-            type: 'move', 
+        sendToServer({
+            type: 'move',
             move: moveData  // 直接发送完整的移动数据对象
         });
     }

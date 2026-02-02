@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMAX 棋魂锻造台 (Fusion Forge Demo)</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f2f2ef;
+            --panel-bg: #ffffff;
+            --text-primary: #2c2c2c;
+            --text-secondary: #666666;
+            --accent-red: #c0392b;
+            --accent-black: #262626;
+            --border-color: #e0e0e0;
+            --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 12px 40px rgba(192, 57, 43, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #app {
+            width: 1200px;
+            height: 800px;
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            gap: 24px;
+            padding: 24px;
+        }
+
+        /* 通用面板样式 */
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.4rem;
+            color: var(--accent-black);
+            background: linear-gradient(to bottom, #fafafa, #fff);
+        }
+
+        /* 左侧：素材库 */
+        .material-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .chess-piece {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid #e6dcd0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.8rem;
+            color: var(--accent-black);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .chess-piece.red {
+            color: var(--accent-red);
+            border-color: #e6dcd0;
+        }
+
+        .chess-piece:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .chess-piece:active {
+            cursor: grabbing;
+        }
+
+        /* 中间：锻造核心 */
+        .forge-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at center, #fff 0%, #f4f4f4 100%);
+        }
+
+        .slots-container {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .forge-slot {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #bbb;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.02);
+            transition: all 0.3s;
+        }
+
+        .forge-slot.active {
+            border-color: var(--accent-red);
+            background: rgba(192, 57, 43, 0.05);
+        }
+
+        .forge-arrow {
+            font-size: 2rem;
+            color: #ddd;
+        }
+
+        .forge-arrow.active {
+            color: var(--accent-red);
+            animation: pulse 1s infinite;
+        }
+
+        .result-slot {
+            width: 140px;
+            height: 140px;
+            border: 2px solid var(--accent-black);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        /* 底部控制区 */
+        .controls-area {
+            width: 100%;
+            padding: 0 40px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent-black);
+            height: 4px;
+        }
+
+        .rune-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .rune {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .rune.selected {
+            background: var(--accent-black);
+            color: #fff;
+            border-color: var(--accent-black);
+        }
+
+        /* 右侧：绘卷模式 (Move Painter) */
+        .mini-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: #e0e0e0;
+            border: 4px solid #5a4a42;
+            padding: 2px;
+            aspect-ratio: 9/10;
+            margin: 20px;
+        }
+
+        .board-cell {
+            background: #fcfcfc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .board-cell.center {
+            background: rgba(192, 57, 43, 0.1);
+        }
+
+        .board-cell::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #ddd;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .move-point {
+            width: 16px;
+            height: 16px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-red);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 动画 */
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .forge-btn {
+            background: var(--accent-black);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            position: absolute;
+            bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .forge-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .forge-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--accent-red);
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- 1. 左侧：素材库 -->
+        <div class="panel">
+            <div class="panel-header">♟️ 素材库 (Material)</div>
+            <div class="material-grid">
+                <div v-for="p in basePieces" :key="p.id" class="chess-piece" :class="{ red: p.color === 'red' }"
+                    draggable="true" @dragstart="startDrag($event, p)">
+                    {{ p.name }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 中间：锻造核心 -->
+        <div class="panel forge-area" @dragover.prevent @drop="onDropForge">
+            <div class="panel-header"
+                style="position:absolute; top:0; width:100%; background:transparent; border:none;">🔥 融合核心 (The Forge)
+            </div>
+
+            <div class="slots-container">
+                <!-- 输入槽 A -->
+                <div class="forge-slot" :class="{ active: slots.a }" @dragover.prevent @drop.stop="onDropSlot('a')">
+                    <div v-if="slots.a" class="chess-piece" :class="{ red: slots.a.color === 'red' }">{{ slots.a.name }}
+                    </div>
+                    <span v-else style="color:#ddd">素材 A</span>
+                </div>
+
+                <div class="forge-arrow" :class="{ active: canForge }">⚡</div>
+
+                <!-- 输入槽 B -->
+                <div class="forge-slot" :class="{ active: slots.b }" @dragover.prevent @drop.stop="onDropSlot('b')">
+                    <div v-if="slots.b" class="chess-piece" :class="{ red: slots.b.color === 'red' }">{{ slots.b.name }}
+                    </div>
+                    <span v-else style="color:#ddd">素材 B</span>
+                </div>
+            </div>
+
+            <div class="forge-arrow" style="transform: rotate(90deg); margin: -20px 0 20px 0;">↓</div>
+
+            <!-- 产物预览 -->
+            <div class="result-slot">
+                <div v-if="isForging" class="loading-ring"></div>
+                <div v-if="resultPiece" class="chess-piece red" style="transform: scale(1.5);">{{ resultPiece.name }}
+                </div>
+                <span v-else-if="!isForging" style="font-size: 3rem; opacity: 0.1;">?</span>
+            </div>
+
+            <button class="forge-btn" :disabled="!canForge || isForging" @click="forge">
+                {{ isForging ? '熔炼中...' : '开始铸造 (Forge)' }}
+            </button>
+
+            <!-- 底部控制 -->
+            <div class="controls-area" style="margin-top: 40px;">
+                <div class="control-group">
+                    <label class="control-label">⚡ 充能回合 (Charge Turns): {{ config.turns }}</label>
+                    <div class="slider-container">
+                        <span style="font-size:0.8rem">1</span>
+                        <input type="range" min="1" max="20" v-model="config.turns">
+                        <span style="font-size:0.8rem">20</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">🔮 注入符文 (Enchant Rune)</label>
+                    <div class="rune-container">
+                        <div class="rune" :class="{ selected: config.rune === 'thunder' }"
+                            @click="config.rune = 'thunder'" title="雷击">⚡</div>
+                        <div class="rune" :class="{ selected: config.rune === 'fire' }" @click="config.rune = 'fire'"
+                            title="自爆">💥</div>
+                        <div class="rune" :class="{ selected: config.rune === 'shield' }"
+                            @click="config.rune = 'shield'" title="护盾">🛡️</div>
+                        <div class="rune" :class="{ selected: config.rune === 'wind' }" @click="config.rune = 'wind'"
+                            title="穿透">🌪️</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 右侧：绘卷模式 -->
+        <div class="panel">
+            <div class="panel-header">🖌️ 绘卷 (Move Painter)</div>
+            <div style="padding: 10px; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                在棋盘上以此为中心，绘制新棋子的走位
+            </div>
+
+            <div class="mini-board">
+                <div v-for="(n, index) in 90" :key="index" class="board-cell" :class="{ center: index === 40 }"
+                    @click="toggleMove(index)">
+                    <div v-if="movePattern.includes(index)" class="move-point"></div>
+                    <div v-if="index === 40" class="chess-piece red"
+                        style="width:30px; height:30px; font-size: 1rem; border-width: 2px;">
+                        {{ resultPiece ? resultPiece.name : '?' }}
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="padding: 20px; background: #fafafa; flex: 1; border-top: 1px solid #eee; font-family: monospace; font-size: 0.8rem; overflow: auto; color: #555;">
+                <strong>// Generated Config:</strong><br>
+                {{ generatedConfig }}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                // 基础素材
+                const basePieces = ref([
+                    { id: 1, name: '车', color: 'red' },
+                    { id: 2, name: '马', color: 'red' },
+                    { id: 3, name: '相', color: 'red' },
+                    { id: 4, name: '炮', color: 'red' },
+                    { id: 5, name: '兵', color: 'red' },
+                    { id: 6, name: '车', color: 'black' },
+                    { id: 7, name: '马', color: 'black' },
+                ]);
+
+                const slots = ref({ a: null, b: null });
+                const resultPiece = ref(null);
+                const isForging = ref(false);
+                const draggedItem = ref(null);
+
+                // 配置项
+                const config = ref({
+                    turns: 10,
+                    rune: 'thunder'
+                });
+
+                // 移动画板状态 (中心是 40, 0-89)
+                // 9x10 grid. Center is roughly row 4, col 4 -> index 40 (0-indexed)
+                const movePattern = ref([30, 32, 48, 52]); // 默认马步 demo
+
+                const canForge = computed(() => slots.value.a && slots.value.b);
+
+                const startDrag = (evt, item) => {
+                    draggedItem.value = item;
+                    evt.dataTransfer.effectAllowed = 'copy';
+                };
+
+                const onDropSlot = (slotName) => {
+                    if (draggedItem.value) {
+                        slots.value[slotName] = draggedItem.value;
+                    }
+                };
+
+                const toggleMove = (index) => {
+                    if (index === 40) return; // Core
+                    const idx = movePattern.value.indexOf(index);
+                    if (idx > -1) movePattern.value.splice(idx, 1);
+                    else movePattern.value.push(index);
+                };
+
+                const forge = () => {
+                    isForging.value = true;
+                    setTimeout(() => {
+                        isForging.value = false;
+                        // Mock logic to combine names
+                        const n1 = slots.value.a.name;
+                        const n2 = slots.value.b.name;
+                        let newName = "神将";
+                        if ((n1 === '马' && n2 === '象') || (n1 === '象' && n2 === '马')) newName = "天马";
+                        if ((n1 === '车' && n2 === '炮') || (n1 === '炮' && n2 === '车')) newName = "雷炮";
+
+                        resultPiece.value = {
+                            name: newName,
+                            color: 'red',
+                            desc: `Fused form of ${n1} & ${n2}`
+                        };
+
+                        // Demo: change pattern based on result
+                        if (newName === "天马") movePattern.value = [19, 21, 23, 25, 29, 33, 49, 53, 57, 61, 63, 65]; // Wild jump
+                    }, 1500);
+                };
+
+                // 动态生成配置 JSON
+                const generatedConfig = computed(() => {
+                    if (!resultPiece.value) return "{ ... }";
+                    return JSON.stringify({
+                        target: resultPiece.value.name,
+                        components: [slots.value.a?.name, slots.value.b?.name],
+                        fusion_rule: {
+                            turns: config.value.turns,
+                            rune_effect: config.value.rune,
+                            vectors: movePattern.value.map(idx => {
+                                const r = Math.floor(idx / 9);
+                                const c = idx % 9;
+                                const centerR = 4; // 40 / 9
+                                const centerC = 4; // 40 % 9
+                                return [r - centerR, c - centerC];
+                            })
+                        }
+                    }, null, 2);
+                });
+
+                return {
+                    basePieces,
+                    slots,
+                    startDrag,
+                    onDropSlot,
+                    canForge,
+                    forge,
+                    isForging,
+                    resultPiece,
+                    config,
+                    movePattern,
+                    toggleMove,
+                    generatedConfig
+                };
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMAX 规则演算 (AI Battle Demo)</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f2f2ef;
+            --panel-bg: #ffffff;
+            --accent-red: #c0392b;
+            --accent-black: #262626;
+            --board-base: #e6dcd0;
+            --board-line: #5a4a42;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: var(--bg-color);
+            color: var(--accent-black);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            display: flex;
+            width: 100%;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e0e0e0;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .chess-board {
+            width: 540px;
+            /* 60 * 9 */
+            height: 600px;
+            /* 60 * 10 */
+            position: relative;
+            background: var(--board-base);
+            border: 5px solid var(--board-line);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 棋盘线 */
+        .board-grid {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            width: 480px;
+            height: 540px;
+            display: grid;
+            grid-template-rows: repeat(9, 1fr);
+            grid-template-columns: repeat(8, 1fr);
+            border: 2px solid var(--board-line);
+            pointer-events: none;
+        }
+
+        .grid-cell {
+            border: 1px solid var(--board-line);
+            border-top: 0;
+            border-left: 0;
+        }
+
+        .piece {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #bcaaa4;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.6rem;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s, top 0.3s, left 0.3s;
+            z-index: 10;
+        }
+
+        .piece.red {
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .piece.black {
+            color: var(--accent-black);
+            border-color: var(--accent-black);
+            background: #eee;
+        }
+
+        .piece.selected {
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--accent-red);
+            z-index: 100;
+            border-color: #f1c40f;
+        }
+
+        .piece.frozen::after {
+            content: '❄️';
+            font-size: 1rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            background: rgba(39, 174, 96, 0.8);
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .log-panel {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            margin-top: 10px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            background: #fdfdfd;
+        }
+
+        .log-new {
+            color: blue;
+        }
+
+        .btn {
+            background: var(--accent-black);
+            color: #fff;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="sidebar">
+            <h3>AIMAX 规则实验室</h3>
+            <p>当前规则：神将降临</p>
+            <div style="background:#eee; padding:10px; border-radius:4px; font-size:0.8rem;">
+                <strong>融合公式:</strong><br>
+                车 + 相 -> <span style="color:#d35400; font-weight:bold;">神将</span><br>
+                (需满足 0 回合充能)<br><br>
+                <strong>神将特性:</strong><br>
+                - 诡异跳跃向量<br>
+                - ⚡ 被动: 吃子冻结周围
+            </div>
+            <hr>
+            <div>
+                AI 状态: <span :style="{color: aiThinking ? 'red' : 'green'}">{{ aiThinking ? '计算中...' : '等待'
+                    }}</span><br>
+                评估值: {{ aiScore }}
+            </div>
+            <button class="btn" @click="restartGame" style="margin-top:20px;">重置对局</button>
+        </div>
+
+        <div class="main-area">
+            <div class="chess-board" @click="handleBoardClick">
+                <!-- Grid Lines Visuals (Simplified) -->
+                <div class="board-grid">
+                    <div v-for="i in 72" class="grid-cell"></div>
+                </div>
+                <!-- River -->
+                <div
+                    style="position: absolute; top: 270px; left: 30px; width: 480px; height: 60px; display:flex; justify-content:center; align-items:center; font-family:'Ma Shan Zheng'; font-size:2rem; color:#8b5a2b; pointer-events:none;">
+                    楚 河 &nbsp; &nbsp; &nbsp; &nbsp; 汉 界
+                </div>
+
+                <!-- Pieces -->
+                <div v-for="p in pieces" :key="p.id" class="piece" :class="{ 
+                    red: p.color === 1, 
+                    black: p.color === 2, 
+                    selected: selectedId === p.id,
+                    frozen: isFrozen(p)
+                }" :style="{ top: (p.r * 60 + 3) + 'px', left: (p.c * 60 + 3) + 'px' }"
+                    @click.stop="handlePieceClick(p)">
+                    {{ p.name }}
+                </div>
+
+                <!-- Hint Dots -->
+                <div v-for="(dot, idx) in hintMoves" :key="'dot-'+idx" class="dot"
+                    :style="{ top: (dot.r * 60 + 30) + 'px', left: (dot.c * 60 + 30) + 'px' }"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h4>对局日志</h4>
+            <div class="log-panel" ref="logPanel">
+                <div v-for="(log, i) in logs" :key="i" :class="{'log-new': i===0}">{{ log }}</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ROWS = 10;
+        const COLS = 9;
+        const EMPTY = 0;
+        const RED = 1;
+        const BLACK = 2;
+
+        // Piece Constants
+        const R_KING = 11, R_ADV = 12, R_ELE = 13, R_HORSE = 14, R_CAR = 15, R_CAN = 16, R_PAWN = 17;
+        const B_KING = 21, B_ADV = 22, B_ELE = 23, B_HORSE = 24, B_CAR = 25, B_CAN = 26, B_PAWN = 27;
+        const R_GOD = 90, B_GOD = 91; // 神将
+
+        // Map ID to Name
+        const NAMES = {
+            11: '帅', 12: '士', 13: '相', 14: '马', 15: '车', 16: '炮', 17: '兵',
+            21: '将', 22: '士', 23: '象', 24: '马', 25: '车', 26: '炮', 27: '卒',
+            90: '神', 91: '神'
+        };
+
+        const VueApp = {
+            setup() {
+                const pieces = Vue.ref([]);
+                const logs = Vue.ref([]);
+                const selectedId = Vue.ref(null);
+                const hintMoves = Vue.ref([]);
+                const aiThinking = Vue.ref(false);
+                const aiScore = Vue.ref(0);
+
+                // Game State
+                let board = [];
+                let currentTurn = RED; // Player is Red
+                let frozenStatus = new Map(); // "r,c" -> turnsLeft
+
+                // AI Constants
+                const PIECE_VALS = {
+                    [R_GOD]: 2000, [B_GOD]: 2000,
+                    [R_KING]: 10000, [B_KING]: 10000,
+                    [R_CAR]: 900, [B_CAR]: 900,
+                    [R_HORSE]: 450, [B_HORSE]: 450,
+                    [R_CAN]: 500, [B_CAN]: 500,
+                    [R_ELE]: 200, [B_ELE]: 200,
+                    [R_ADV]: 200, [B_ADV]: 200,
+                    [R_PAWN]: 100, [B_PAWN]: 100
+                };
+
+                const initGame = () => {
+                    pieces.value = [];
+                    board = Array(ROWS).fill(0).map(() => Array(COLS).fill(EMPTY));
+                    frozenStatus.clear();
+                    currentTurn = RED;
+                    logs.value = ["游戏开始，红方先行"];
+
+                    // Standard Setup
+                    const setup = [
+                        [0, 0, R_CAR], [0, 1, R_HORSE], [0, 2, R_ELE], [0, 3, R_ADV], [0, 4, R_KING], [0, 5, R_ADV], [0, 6, R_ELE], [0, 7, R_HORSE], [0, 8, R_CAR],
+                        [2, 1, R_CAN], [2, 7, R_CAN],
+                        [3, 0, R_PAWN], [3, 2, R_PAWN], [3, 4, R_PAWN], [3, 6, R_PAWN], [3, 8, R_PAWN],
+
+                        [9, 0, B_CAR], [9, 1, B_HORSE], [9, 2, B_ELE], [9, 3, B_ADV], [9, 4, B_KING], [9, 5, B_ADV], [9, 6, B_ELE], [9, 7, B_HORSE], [9, 8, B_CAR],
+                        [7, 1, B_CAN], [7, 7, B_CAN],
+                        [6, 0, B_PAWN], [6, 2, B_PAWN], [6, 4, B_PAWN], [6, 6, B_PAWN], [6, 8, B_PAWN]
+                    ];
+
+                    let pid = 1;
+                    setup.forEach(([r, c, type]) => {
+                        board[r][c] = type;
+                        pieces.value.push({
+                            id: pid++,
+                            r, c,
+                            type,
+                            name: NAMES[type],
+                            color: type < 20 ? RED : BLACK
+                        });
+                    });
+                };
+
+                const getPieceAt = (r, c) => board[r][c];
+                const getColor = (type) => {
+                    if (type === EMPTY) return null;
+                    if (type === R_GOD) return RED;
+                    if (type === B_GOD) return BLACK;
+                    return type < 20 ? RED : BLACK;
+                };
+
+                // ---- Logic Engine ----
+
+                const isValidPos = (r, c) => r >= 0 && r < ROWS && c >= 0 && c < COLS;
+
+                const getMoves = (brd, color, checkFrozen = false) => {
+                    let moves = [];
+                    for (let r = 0; r < ROWS; r++) {
+                        for (let c = 0; c < COLS; c++) {
+                            const p = brd[r][c];
+                            if (p === EMPTY || getColor(p) !== color) continue;
+
+                            // Frozen Check
+                            if (checkFrozen && frozenStatus.has(`${r},${c}`)) continue;
+
+                            const type = p;
+
+                            // Helper
+                            const add = (tr, tc, isFusion = false) => {
+                                if (!isValidPos(tr, tc)) return;
+                                const target = brd[tr][tc];
+                                const tColor = getColor(target);
+
+                                // Normal Move or Capture
+                                if (target === EMPTY || tColor !== color) {
+                                    moves.push({ from: { r, c }, to: { r: tr, c: tc }, fusion: false });
+                                }
+                                // Fusion Logic: Car + Elephant
+                                else if (tColor === color) {
+                                    // Rule: Car(15/25) + Elephant(13/23) -> God
+                                    const inputSet = new Set([type, target]);
+                                    const isRedFusion = (inputSet.has(R_CAR) && inputSet.has(R_ELE));
+                                    const isBlackFusion = (inputSet.has(B_CAR) && inputSet.has(B_ELE));
+
+                                    if (isRedFusion || isBlackFusion) {
+                                        moves.push({ from: { r, c }, to: { r: tr, c: tc }, fusion: true });
+                                    }
+                                }
+                            };
+
+                            // Specific Piece Logic
+                            if (type === R_CAR || type === B_CAR) {
+                                [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(([dr, dc]) => {
+                                    let nr = r + dr, nc = c + dc;
+                                    while (isValidPos(nr, nc)) {
+                                        const t = brd[nr][nc];
+                                        if (t === EMPTY) { add(nr, nc); }
+                                        else { add(nr, nc); break; } // Hit piece (capture or fuse)
+                                        nr += dr; nc += dc;
+                                    }
+                                });
+                            }
+                            else if (type === R_HORSE || type === B_HORSE) {
+                                [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]].forEach(([dr, dc]) => {
+                                    const nr = r + dr, nc = c + dc;
+                                    if (!isValidPos(nr, nc)) return;
+                                    // Ma Tue (Legs)
+                                    const lr = r + (Math.abs(dr) === 2 ? Math.sign(dr) : 0);
+                                    const lc = c + (Math.abs(dc) === 2 ? Math.sign(dc) : 0);
+                                    if (brd[lr][lc] === EMPTY) add(nr, nc);
+                                });
+                            }
+                            else if (type === R_ELE || type === B_ELE) {
+                                [[2, 2], [2, -2], [-2, 2], [-2, -2]].forEach(([dr, dc]) => {
+                                    const nr = r + dr, nc = c + dc;
+                                    if (!isValidPos(nr, nc)) return;
+                                    const er = r + dr / 2, ec = c + dc / 2;
+                                    if (brd[er][ec] === EMPTY) {
+                                        // River constraint
+                                        if (color === RED && nr >= 5) return;
+                                        if (color === BLACK && nr <= 4) return;
+                                        add(nr, nc);
+                                    }
+                                });
+                            }
+                            else if (type === R_ADV || type === B_ADV || type === R_KING || type === B_KING) {
+                                // Simplified Palace
+                                const isK = (type === R_KING || type === B_KING);
+                                const steps = isK ? [[0, 1], [0, -1], [1, 0], [-1, 0]] : [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+                                steps.forEach(([dr, dc]) => {
+                                    const nr = r + dr, nc = c + dc;
+                                    if ((color === RED && nr >= 0 && nr <= 2 && nc >= 3 && nc <= 5) ||
+                                        (color === BLACK && nr >= 7 && nr <= 9 && nc >= 3 && nc <= 5)) {
+                                        add(nr, nc);
+                                    }
+                                });
+                            }
+                            else if (type === R_CAN || type === B_CAN) {
+                                [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(([dr, dc]) => {
+                                    let nr = r + dr, nc = c + dc;
+                                    let jumped = false;
+                                    while (isValidPos(nr, nc)) {
+                                        const t = brd[nr][nc];
+                                        if (t === EMPTY) { if (!jumped) add(nr, nc); }
+                                        else {
+                                            if (!jumped) jumped = true;
+                                            else { add(nr, nc); break; }
+                                        }
+                                        nr += dr; nc += dc;
+                                    }
+                                });
+                            }
+                            else if (type === R_PAWN || type === B_PAWN) {
+                                // Simple Pawn
+                                const dirs = color === RED ? (r < 5 ? [[1, 0]] : [[1, 0], [0, 1], [0, -1]]) : (r > 4 ? [[-1, 0]] : [[-1, 0], [0, 1], [0, -1]]);
+                                dirs.forEach(([dr, dc]) => add(r + dr, c + dc));
+                            }
+                            // GOD GENERAL
+                            else if (type === R_GOD || type === B_GOD) {
+                                const vectors = [[0, 3], [2, 1], [0, -1], [-2, 1]];
+                                vectors.forEach(([dr, dc]) => {
+                                    // Direct jump (Vectors in demo imply jumps)
+                                    add(r + dr, c + dc);
+                                });
+                            }
+                        }
+                    }
+                    return moves;
+                };
+
+                // ---- Interaction ----
+                const handlePieceClick = (p) => {
+                    if (aiThinking.value) return;
+                    if (currentTurn !== RED) return; // Player is Red
+
+                    // Priority: If specific move exists (Capture Enemy OR Fusion with Own), do it
+                    if (selectedId.value) {
+                        // Check if this position is in hintMoves
+                        const isTarget = hintMoves.value.some(h => h.r === p.r && h.c === p.c);
+                        if (isTarget) {
+                            tryMoveTo(p.r, p.c);
+                            return;
+                        }
+                    }
+
+                    // Otherwise: Select own piece
+                    if (p.color === RED) {
+                        if (frozenStatus.has(`${p.r},${p.c}`)) {
+                            logs.value.unshift("该棋子已被冻结！");
+                            return;
+                        }
+                        selectedId.value = p.id;
+                        const validMoves = getMoves(board, RED, true)
+                            .filter(m => m.from.r === p.r && m.from.c === p.c);
+                        hintMoves.value = validMoves.map(m => m.to);
+                    }
+                };
+
+                const handleBoardClick = (e) => {
+                    // Calculate grid pos
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    // Grid cells are 60x60, simple floor division gives 0-8 for cols, 0-9 for rows
+                    const c = Math.floor((e.clientX - rect.left) / 60);
+                    const r = Math.floor((e.clientY - rect.top) / 60);
+
+                    if (selectedId.value && isValidPos(r, c)) {
+                        tryMoveTo(r, c);
+                    }
+                };
+
+                const tryMoveTo = (tr, tc) => {
+                    if (!selectedId.value) return;
+                    const p = pieces.value.find(x => x.id === selectedId.value);
+                    const moves = getMoves(board, RED, true);
+                    const match = moves.find(m => m.from.r === p.r && m.from.c === p.c && m.to.r === tr && m.to.c === tc);
+
+                    if (match) {
+                        applyMove(match);
+                    } else {
+                        selectedId.value = null; // Deselect
+                        hintMoves.value = [];
+                    }
+                };
+
+                const applyMove = (move) => {
+                    // Execute Move
+                    const f = move.from, t = move.to;
+                    const pObj = pieces.value.find(p => p.r === f.r && p.c === f.c);
+                    const targetObj = pieces.value.find(p => p.r === t.r && p.c === t.c);
+
+                    // Update Logic Board
+                    const pType = board[f.r][f.c];
+                    let newType = pType;
+
+                    // Fusion ?
+                    if (move.fusion) {
+                        newType = (getColor(pType) === RED) ? R_GOD : B_GOD;
+                        logs.value.unshift(`🔥 ${NAMES[pType]}与${NAMES[board[t.r][t.c]]}融合为神将！`);
+                    } else if (targetObj) {
+                        logs.value.unshift(`⚔️ ${NAMES[pType]}吃掉了${NAMES[board[t.r][t.c]]}`);
+                    } else {
+                        logs.value.unshift(`${NAMES[pType]} 移动`);
+                    }
+
+                    // Remove target/partner piece from VIEW
+                    if (targetObj) {
+                        const idx = pieces.value.indexOf(targetObj);
+                        if (idx > -1) pieces.value.splice(idx, 1);
+                    }
+
+                    // Move Piece in VIEW
+                    pObj.r = t.r;
+                    pObj.c = t.c;
+                    pObj.type = newType;
+                    pObj.name = NAMES[newType];
+
+                    // Update LOGIC
+                    board[f.r][f.c] = EMPTY;
+                    board[t.r][t.c] = newType;
+
+                    // Rune Effect: Thunder (If God General Captured Enemy)
+                    if ((newType === R_GOD || newType === B_GOD) && !move.fusion && targetObj && targetObj.color !== pObj.color) {
+                        // Check neighbors
+                        const deltas = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+                        let hitCount = 0;
+                        deltas.forEach(([dr, dc]) => {
+                            const nR = t.r + dr, nC = t.c + dc;
+                            if (isValidPos(nR, nC) && board[nR][nC] !== EMPTY) {
+                                frozenStatus.set(`${nR},${nC}`, 1); // Freeze for 1 turn (technically until next turn end)
+                                hitCount++;
+                            }
+                        });
+                        if (hitCount > 0) logs.value.unshift(`⚡ 雷击发动！${hitCount}个棋子被冻结`);
+                    }
+
+                    // Cleanup
+                    selectedId.value = null;
+                    hintMoves.value = [];
+
+                    // Turn Switch
+                    if (currentTurn === RED) {
+                        currentTurn = BLACK;
+                        // Tick down Frozen
+                        for (let [key, val] of frozenStatus) {
+                            if (val <= 0) frozenStatus.delete(key);
+                            else frozenStatus.set(key, val - 0.5); // Half turn tick? Simplify: simply tick on player start
+                        }
+                        // Request AI
+                        setTimeout(runAI, 500);
+                    } else {
+                        currentTurn = RED;
+                        // Tick frozen for RED
+                        for (let [key, val] of frozenStatus) {
+                            // Simple logic: remove freeze if it was set previous turn
+                            frozenStatus.delete(key);
+                        }
+                    }
+                };
+
+                // ---- AI (Minimax) ----
+
+                const runAI = () => {
+                    aiThinking.value = true;
+                    setTimeout(() => {
+                        // Deep copy board is expensive, we use flat copy for demo recursion with undo
+                        // But here we need to map our 'board' constant structure
+                        const best = minimax(board, 3, -Infinity, Infinity, true); // true = Black Max? Adjust below
+                        if (best.move) {
+                            applyMove(best.move);
+                        } else {
+                            logs.value.unshift("AI 无棋可走 (绝杀?)");
+                        }
+                        aiThinking.value = false;
+                        aiScore.value = best.score;
+                    }, 100);
+                };
+
+                const evaluate = (brd) => {
+                    let score = 0;
+                    for (let r = 0; r < ROWS; r++) {
+                        for (let c = 0; c < COLS; c++) {
+                            const p = brd[r][c];
+                            if (p === EMPTY) continue;
+                            const val = PIECE_VALS[p] || 100;
+                            if (getColor(p) === BLACK) score += val; // AI tries to Maximize BLACK
+                            else score -= val;
+                        }
+                    }
+                    return score;
+                };
+
+                const minimax = (brd, depth, alpha, beta, isMax) => {
+                    // Determine color
+                    const color = isMax ? BLACK : RED;
+
+                    // Base 
+                    if (depth === 0) return { score: evaluate(brd) };
+
+                    const moves = getMoves(brd, color, true); // AI respects frozen status
+                    // Better: AI shouldn't select frozen pieces.
+                    // Since 'brd' doesn't carry frozenStatus state in recursion, AI assumes no freeze in future depth.
+
+                    if (moves.length === 0) return { score: isMax ? -99999 : 99999 }; // Checkmate?
+
+                    let bestMove = null;
+                    let bestScore = isMax ? -Infinity : Infinity;
+
+                    // Sort moves: Captures first (simple heuristic)
+                    moves.sort((a, b) => {
+                        const tA = brd[a.to.r][a.to.c] !== EMPTY ? 10 : 0;
+                        const tB = brd[b.to.r][b.to.c] !== EMPTY ? 10 : 0;
+                        return tB - tA;
+                    });
+
+                    for (let move of moves) {
+                        // Make
+                        const undoFrom = brd[move.from.r][move.from.c];
+                        const undoTo = brd[move.to.r][move.to.c];
+
+                        let nextBrd = brd; // In place modification with rollback
+
+                        // Logic for Fusion in Search
+                        if (move.fusion) {
+                            nextBrd[move.to.r][move.to.c] = (color === RED ? R_GOD : B_GOD);
+                        } else {
+                            nextBrd[move.to.r][move.to.c] = undoFrom;
+                        }
+                        nextBrd[move.from.r][move.from.c] = EMPTY;
+
+                        // Recurse
+                        const val = minimax(nextBrd, depth - 1, alpha, beta, !isMax).score;
+
+                        // Undo
+                        nextBrd[move.from.r][move.from.c] = undoFrom;
+                        nextBrd[move.to.r][move.to.c] = undoTo;
+
+                        if (isMax) {
+                            if (val > bestScore) { bestScore = val; bestMove = move; }
+                            alpha = Math.max(alpha, val);
+                        } else {
+                            if (val < bestScore) { bestScore = val; bestMove = move; }
+                            beta = Math.min(beta, val);
+                        }
+                        if (beta <= alpha) break;
+                    }
+
+                    return { score: bestScore, move: bestMove };
+                };
+
+                // Helpers
+                const isFrozen = (p) => frozenStatus.has(`${p.r},${p.c}`);
+                const restartGame = initGame;
+
+                Vue.onMounted(initGame);
+
+                return {
+                    pieces, logs, handleBoardClick, handlePieceClick,
+                    selectedId, hintMoves, restartGame, isFrozen, aiThinking, aiScore
+                };
+            }
+        };
+
+        Vue.createApp(VueApp).mount('#app');
+    </script>
+</body>
+
+</html>
