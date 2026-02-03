@@ -33,6 +33,8 @@ interface ChessRule {
   aparted: number;//允许间隔吃子，-1表示不允许，0表示允许任意间隔吃子，正数表示允许间隔N个子吃子
   isBlocked: boolean;//是否阻挡
   allowedRange: ChessPosition[];//允许活动的范围
+  isOverRiver: boolean;//是否过河
+  addAllowed: ChessPosition[];//过河后增加的允许移动的位置
 }
 
 // 单个棋子类型
@@ -75,7 +77,7 @@ export default defineComponent({
       qiZiArray: {
         car: {
           name: '车',
-          x: 2,
+          x: 0,
           y: 0,
           isRed: true,
           rules: {
@@ -87,14 +89,16 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 4 }, { x: 8, y: 4 }]
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [],
+            isOverRiver: false
           }
         },
-        horse: {
+        horse1: {
           name: '马',
-          x: 0,
-          y: 2,
-          isRed: false,
+          x: 1,
+          y: 0,
+          isRed: true,
           rules: {
             allowed: [
               { x: 1, y: 2 },//右上
@@ -108,12 +112,132 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }]
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        xiang1: {
+          name: '相',
+          x: 2,
+          y: 0,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 2, y: 2 },
+              { x: -2, y: 2 },
+              { x: 2, y: -2 },
+              { x: -2, y: -2 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 4 }, { x: 8, y: 4 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        shi1: {
+          name: '士',
+          x: 3,
+          y: 0,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 },
+              { x: -1, y: 1 },
+              { x: 1, y: -1 },
+              { x: -1, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 2, y: 0 }, { x: 6, y: 0 }, { x: 2, y: 4 }, { x: 6, y: 4 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        shuai: {
+          name: '帅',
+          x: 4,
+          y: 0,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 1, y: 0 },
+              { x: -1, y: 0 },
+              { x: 0, y: 1 },
+              { x: 0, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 2, y: 0 }, { x: 6, y: 0 }, { x: 2, y: 4 }, { x: 6, y: 4 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        shi2: {
+          name: '士',
+          x: 5,
+          y: 0,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 },
+              { x: -1, y: 1 },
+              { x: 1, y: -1 },
+              { x: -1, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 2, y: 0 }, { x: 6, y: 0 }, { x: 2, y: 4 }, { x: 6, y: 4 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        xiang2: {
+          name: '相',
+          x: 6,
+          y: 0,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 2, y: 2 },
+              { x: -2, y: 2 },
+              { x: 2, y: -2 },
+              { x: -2, y: -2 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 4 }, { x: 8, y: 4 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        horse2: {
+          name: '马',
+          x: 7,
+          y: 0,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 1, y: 2 },
+              { x: 1, y: -2 },
+              { x: -1, y: 2 },
+              { x: -1, y: -2 },
+              { x: 2, y: 1 },
+              { x: 2, y: -1 },
+              { x: -2, y: 1 },
+              { x: -2, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [],
+            isOverRiver: false
           }
         },
         car2: {
           name: '车',
-          x: 0,
+          x: 8,
           y: 0,
           isRed: true,
           rules: {
@@ -125,14 +249,16 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }]
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [],
+            isOverRiver: false
           }
         },
-        pao: {
+        pao1: {
           name: '炮',
           x: 1,
-          y: 4,
-          isRed: false,
+          y: 2,
+          isRed: true,
           rules: {
             allowed: [
               { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
@@ -142,9 +268,369 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: 1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }]
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        pao2: {
+          name: '炮',
+          x: 7,
+          y: 2,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
+              { x: 0, y: -1 }, { x: 0, y: -2 }, { x: 0, y: -3 }, { x: 0, y: -4 }, { x: 0, y: -5 }, { x: 0, y: -6 }, { x: 0, y: -7 }, { x: 0, y: -8 }, { x: 0, y: -9 },//下
+              { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 },//右
+              { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
+            ],
+            isBlocked: true,
+            aparted: 1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [],
+            isOverRiver: false
+          }
+        },
+        bing1: {
+          name: "兵",
+          x: 0,
+          y: 3,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        bing2: {
+          name: "兵",
+          x: 2,
+          y: 3,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        bing3: {
+          name: "兵",
+          x: 4,
+          y: 3,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        bing4: {
+          name: "兵",
+          x: 6,
+          y: 3,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        bing5: {
+          name: "兵",
+          x: 8,
+          y: 3,
+          isRed: true,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        zu1: {
+          name: "卒",
+          x: 0,
+          y: 6,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        zu2: {
+          name: "卒",
+          x: 2,
+          y: 6,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        zu3: {
+          name: "卒",
+          x: 4,
+          y: 6,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        zu4: {
+          name: "卒",
+          x: 6,
+          y: 6,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        zu5: {
+          name: "卒",
+          x: 8,
+          y: 6,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: -1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        carb1: {
+          name: "车",
+          x: 0,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        carb2: {
+          name: "车",
+          x: 8,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        horseb1: {
+          name: "马",
+          x: 1,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        horseb2: {
+          name: "马",
+          x: 7,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 0, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        xiangb1: {
+          name: "相",
+          x: 2,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        xiangb2: {
+          name: "相",
+          x: 6,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        shib1: {
+          name: "士",
+          x: 3,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        shib2: {
+          name: "士",
+          x: 5,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        jiang: {
+          name: "将",
+          x: 4,
+          y: 9,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        paob1: {
+          name: "炮",
+          x: 1,
+          y: 7,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
+          }
+        },
+        paob2: {
+          name: "炮",
+          x: 7,
+          y: 7,
+          isRed: false,
+          rules: {
+            allowed: [
+              { x: 1, y: 1 }
+            ],
+            isBlocked: true,
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            isOverRiver: false
           }
         }
+
+
+
       } as ChessCollection,
       //融合规则
       fusionArray: {
@@ -210,6 +696,12 @@ export default defineComponent({
         chess.x = x
         chess.y = y
       }
+      //过河检测
+      if (this.checkOverRiver(chess, { x, y })) {
+        chess.rules.isOverRiver = true
+      } else {
+        chess.rules.isOverRiver = false
+      }
 
       this.updateBoard()
     },
@@ -253,7 +745,14 @@ export default defineComponent({
             x: target.x,
             y: target.y,
             isRed: chess.isRed,
-            rules: proto.rules
+            rules: {
+              allowed: proto.rules.allowed,
+              isBlocked: proto.rules.isBlocked,
+              aparted: proto.rules.aparted,
+              allowedRange: proto.rules.allowedRange,
+              addAllowed: proto.rules.addAllowed,
+              isOverRiver: target.rules.isOverRiver
+            }
           }
 
           console.log('融合成功', resultName)
@@ -315,10 +814,19 @@ export default defineComponent({
     },
     //生成所有可走点
     generateMoves(chess: ChessPiece) {
-      return chess.rules.allowed.map(a => ({
-        x: chess.x + a.x,
-        y: chess.y + a.y
-      }))
+      //判断是否过河
+      if (chess.rules.isOverRiver) {
+        let allowed = chess.rules.allowed.concat(chess.rules.addAllowed)
+        return allowed.map(a => ({
+          x: chess.x + a.x,
+          y: chess.y + a.y
+        }))
+      } else {
+        return chess.rules.allowed.map(a => ({
+          x: chess.x + a.x,
+          y: chess.y + a.y
+        }))
+      }
     },
     //过滤出棋盘内的位置
     filterOutOfBoard(moves: ChessPosition[]) {
@@ -431,6 +939,14 @@ export default defineComponent({
       return moves.filter(pos => {
         return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY
       })
+    },
+    //检查是否过河
+    checkOverRiver(chess: ChessPiece, pos: ChessPosition) {
+      if (chess.isRed) {
+        return pos.y > 4
+      } else {
+        return pos.y < 5
+      }
     },
     //根据坐标查找棋子在棋子集合中的键
     findPieceKeyAt(x: number, y: number): string | null {

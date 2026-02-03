@@ -20,11 +20,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import pineappleBunImg from '../assets/pineapple_bun.jpg';
-
+import pineappleBunAvatar from '../assets/pineapple_bun.jpg';
+import manmanAvatar from '../assets/manman.jpg';
+import yufeiAvatar from '../assets/yufei.jpg';
+import keleAvatar from '../assets/kele.jpg';
+import sheijiaxiaohaiAvatar from '../assets/sheijiaxiaohai.jpg';
+import guyingAvatar from '../assets/guying.jpg';
+import abaoAvatar from '../assets/abao.jpg';
 // Simple SVG placeholder data URI for empty avatars
-const placeholderAvatar = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgZmlsbD0iI2YzZjRmNiI+PGNpcmNsZSBjeD0iNTAiIGN5PSI0MCIgcj0iMjUiIGZpbGw9IiNjY2QxZDUiLz48cGF0aCBkPSJNMjUgODAgQSAyNSAyNSAwIDAgMSAxMCA4MCBMIDkwIDgwIEEgMjUgMjUgMCAwIDEgNzUgODAgWiIgZmlsbD0iI2NjZDFkNSIvPjwvc3ZnPg==`;
-
 export default defineComponent({
     name: 'ContributorList',
     data() {
@@ -34,19 +37,43 @@ export default defineComponent({
                     name: '菠萝面包',
                     role: '核心贡献者',
                     description: '投喂了8个棋子',
-                    avatar: pineappleBunImg
+                    avatar: pineappleBunAvatar
                 },
                 {
-                    name: '虚位以待',
-                    role: '期待加入',
-                    description: '欢迎提交 PR 成为贡献者，共同完善本项目！',
-                    avatar: placeholderAvatar
+                    name: '溪深时鱼肥',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: yufeiAvatar
                 },
                 {
-                    name: '虚位以待',
-                    role: 'UI 设计',
-                    description: '优化界面交互与视觉体验，让下棋更具美感。',
-                    avatar: placeholderAvatar
+                    name: '漫漫',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: manmanAvatar
+                },
+                {
+                    name: '可乐',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: keleAvatar
+                },
+                {
+                    name: '谁家小孩',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: sheijiaxiaohaiAvatar
+                },
+                {
+                    name: '孤影',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: guyingAvatar
+                },
+                {
+                    name: '阿宝',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: abaoAvatar
                 },
             ]
         }
