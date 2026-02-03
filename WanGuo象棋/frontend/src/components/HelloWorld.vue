@@ -4,7 +4,7 @@
     <div class="chessboard">
       <!-- 棋盘网格 -->
       <div v-for="y in 10" :key="'row-' + y" class="row">
-        <div v-for="x in 9" :key="'cell-' + x + '-' + y" class="cell" @click="handleCellClick(x - 1, y - 1)">
+        <div v-for="x in 9" :key="'cell-' + x + '-' + y" class="cell" @click="checkCamp(x - 1, y - 1)">
           <!-- 显示棋盘中的棋子 -->
           <div v-if="board[y - 1] && board[y - 1]![x - 1]"
             :class="'piece' + (board[y - 1]![x - 1]!.isRed ? ' red' : ' black')">
@@ -32,6 +32,7 @@ interface ChessRule {
   allowed: ChessPosition[];//允许移动的位置
   aparted: number;//允许间隔吃子，-1表示不允许，0表示允许任意间隔吃子，正数表示允许间隔N个子吃子
   isBlocked: boolean;//是否阻挡
+  allowedRange: ChessPosition[];//允许活动的范围
 }
 
 // 单个棋子类型
@@ -64,15 +65,19 @@ let selectedKey: string | null = null
 export default defineComponent({
   data() {
     return {
+      //当前阵营
+      currentCamp: true,//true表示红方，false表示黑方
+      //轮到走棋的阵营
+      runCamp: true,//true表示红方，false表示黑方
       board: [] as (ChessPieceInBoard | null)[][],//棋盘
       possibleMoves: [] as { x: number, y: number }[],//可落点位置
       //棋子集合
       qiZiArray: {
         car: {
           name: '车',
-          x: 0,
-          y: 9,
-          isRed: false,
+          x: 2,
+          y: 0,
+          isRed: true,
           rules: {
             allowed: [
               { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
@@ -81,7 +86,8 @@ export default defineComponent({
               { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
-            aparted: -1
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 4 }, { x: 8, y: 4 }]
           }
         },
         horse: {
@@ -101,7 +107,8 @@ export default defineComponent({
               { x: -2, y: -1 }//下左
             ],
             isBlocked: true,
-            aparted: -1
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }]
           }
         },
         car2: {
@@ -117,7 +124,8 @@ export default defineComponent({
               { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
-            aparted: -1
+            aparted: -1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }]
           }
         },
         pao: {
@@ -133,7 +141,8 @@ export default defineComponent({
               { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
-            aparted: 1
+            aparted: 1,
+            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }]
           }
         }
       } as ChessCollection,
@@ -144,6 +153,15 @@ export default defineComponent({
     };
   },
   methods: {
+    //阵营检测
+    checkCamp(x: number, y: number) {
+      if (this.currentCamp == this.runCamp) {
+        this.handleCellClick(x, y);
+      } else {
+        return
+      }
+    },
+    //处理点击事件
     handleCellClick(x: number, y: number) {
       const key = this.checkQiZiClick(x, y)
 
@@ -163,11 +181,14 @@ export default defineComponent({
       }
       // 没有选中棋子，且点击的是棋子
       else if (key) {
+        //检测所选棋子是否是当前阵营
+        if (this.qiZiArray[key]!.isRed !== this.runCamp) {
+          return
+        }
         selectedKey = key
         const selectedQiZi = this.qiZiArray[key] as ChessPiece
         this.possibleMoves = this.checkMove(selectedQiZi)
       }
-
     },
     //检查是点击棋子还是点击空白位置,返回被点击的棋子
     checkQiZiClick(x: number, y: number): string | null {
@@ -283,6 +304,7 @@ export default defineComponent({
       let moves = this.generateMoves(chess)
       moves = this.filterOutOfBoard(moves)//过滤出棋盘内的位置
       moves = this.filterEatRule(chess, moves)//过滤吃子规则
+      moves = this.filterOutOfRange(chess, moves)//过滤掉不在活动范围内的路径
       console.log(
         chess.name,
         '当前位置', chess.x, chess.y,
@@ -395,6 +417,19 @@ export default defineComponent({
         // 己方：只能融合
         const chessKey = this.findPieceKeyAt(chess.x, chess.y)!
         return this.canFusion(chessKey, targetKey!) === 2
+      })
+    },
+    //过滤掉不在活动范围内的路径
+    filterOutOfRange(chess: ChessPiece, moves: ChessPosition[]) {
+      const range = chess.rules.allowedRange
+      // 从四个角点计算矩形边界
+      const minX = Math.min(...range.map(p => p.x))
+      const maxX = Math.max(...range.map(p => p.x))
+      const minY = Math.min(...range.map(p => p.y))
+      const maxY = Math.max(...range.map(p => p.y))
+
+      return moves.filter(pos => {
+        return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY
       })
     },
     //根据坐标查找棋子在棋子集合中的键
