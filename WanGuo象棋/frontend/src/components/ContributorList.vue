@@ -27,6 +27,7 @@ import keleAvatar from '../assets/kele.jpg';
 import sheijiaxiaohaiAvatar from '../assets/sheijiaxiaohai.jpg';
 import guyingAvatar from '../assets/guying.jpg';
 import abaoAvatar from '../assets/abao.jpg';
+import wangyuanjingAvatar from '../assets/wangyuanjing.jpg';
 // Simple SVG placeholder data URI for empty avatars
 export default defineComponent({
     name: 'ContributorList',
@@ -74,6 +75,12 @@ export default defineComponent({
                     role: '核心贡献者',
                     description: '提供了宝贵意见',
                     avatar: abaoAvatar
+                },
+                {
+                    name: '望远镜',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: wangyuanjingAvatar
                 },
             ]
         }
