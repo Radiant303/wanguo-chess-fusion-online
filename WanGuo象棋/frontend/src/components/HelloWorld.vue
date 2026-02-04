@@ -916,6 +916,9 @@ export default defineComponent({
       // 检测己方是否会被将军
       const willBeInCheck = this.isInCheck(chess.isRed)
 
+      // 检测是否会导致将帅碰面
+      const willCauseKingsFacing = this.isKingsFacing()
+
       // 恢复状态
       chess.x = originalX
       chess.y = originalY
@@ -925,7 +928,42 @@ export default defineComponent({
         this.qiZiArray[targetKey] = capturedPiece
       }
 
-      return willBeInCheck
+      // 如果被将军或导致将帅碰面，都是不合法的移动
+      return willBeInCheck || willCauseKingsFacing
+    },
+
+    /**
+     * 检测将和帅是否直接碰面（在同一纵列且中间没有棋子阻挡）
+     * 根据中国象棋规则，将帅不能直接面对面
+     * @returns true 表示将帅正在碰面（不合法状态）
+     */
+    isKingsFacing(): boolean {
+      // 查找红方帅和黑方将
+      const redKing = this.findKing(true)   // 红方帅
+      const blackKing = this.findKing(false) // 黑方将
+
+      if (!redKing || !blackKing) {
+        return false
+      }
+
+      // 检查是否在同一纵列（x坐标相同）
+      if (redKing.x !== blackKing.x) {
+        return false // 不在同一列，不可能碰面
+      }
+
+      // 检查两者之间是否有棋子阻挡
+      const minY = Math.min(redKing.y, blackKing.y)
+      const maxY = Math.max(redKing.y, blackKing.y)
+
+      // 遍历将帅之间的所有位置
+      for (let y = minY + 1; y < maxY; y++) {
+        if (this.findPieceKeyAt(redKing.x, y)) {
+          return false // 找到阻挡的棋子，不是碰面
+        }
+      }
+
+      // 同一列且中间没有棋子，将帅碰面！
+      return true
     },
     //生成所有可走点
     generateMoves(chess: ChessPiece) {
