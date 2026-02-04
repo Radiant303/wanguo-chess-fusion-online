@@ -150,7 +150,7 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 2, y: 0 }, { x: 6, y: 0 }, { x: 2, y: 4 }, { x: 6, y: 4 }],
+            allowedRange: [{ x: 3, y: 0 }, { x: 3, y: 2 }, { x: 5, y: 0 }, { x: 5, y: 2 }],
             addAllowed: [],
             isOverRiver: false
           }
@@ -169,7 +169,7 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 2, y: 0 }, { x: 6, y: 0 }, { x: 2, y: 4 }, { x: 6, y: 4 }],
+            allowedRange: [{ x: 3, y: 0 }, { x: 3, y: 2 }, { x: 5, y: 0 }, { x: 5, y: 2 }],
             addAllowed: [],
             isOverRiver: false
           }
@@ -188,7 +188,7 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 2, y: 0 }, { x: 6, y: 0 }, { x: 2, y: 4 }, { x: 6, y: 4 }],
+            allowedRange: [{ x: 3, y: 0 }, { x: 3, y: 2 }, { x: 5, y: 0 }, { x: 5, y: 2 }],
             addAllowed: [],
             isOverRiver: false
           }
@@ -459,12 +459,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 0, y: 1 }
+              { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
+              { x: 0, y: -1 }, { x: 0, y: -2 }, { x: 0, y: -3 }, { x: 0, y: -4 }, { x: 0, y: -5 }, { x: 0, y: -6 }, { x: 0, y: -7 }, { x: 0, y: -8 }, { x: 0, y: -9 },//下
+              { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 },//右
+              { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
             aparted: -1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -475,12 +478,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 0, y: 1 }
+              { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
+              { x: 0, y: -1 }, { x: 0, y: -2 }, { x: 0, y: -3 }, { x: 0, y: -4 }, { x: 0, y: -5 }, { x: 0, y: -6 }, { x: 0, y: -7 }, { x: 0, y: -8 }, { x: 0, y: -9 },//下
+              { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 },//右
+              { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
             aparted: -1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -491,12 +497,19 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 0, y: 1 }
+              { x: 1, y: 2 },
+              { x: 1, y: -2 },
+              { x: -1, y: 2 },
+              { x: -1, y: -2 },
+              { x: 2, y: 1 },
+              { x: 2, y: -1 },
+              { x: -2, y: 1 },
+              { x: -2, y: -1 }
             ],
             isBlocked: true,
             aparted: -1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -507,12 +520,19 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 0, y: 1 }
+              { x: 1, y: 2 },
+              { x: 1, y: -2 },
+              { x: -1, y: 2 },
+              { x: -1, y: -2 },
+              { x: 2, y: 1 },
+              { x: 2, y: -1 },
+              { x: -2, y: 1 },
+              { x: -2, y: -1 }
             ],
             isBlocked: true,
             aparted: -1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -523,12 +543,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 2, y: 2 },
+              { x: -2, y: 2 },
+              { x: 2, y: -2 },
+              { x: -2, y: -2 }
             ],
             isBlocked: true,
             aparted: -1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -539,12 +562,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 2, y: 2 },
+              { x: -2, y: 2 },
+              { x: 2, y: -2 },
+              { x: -2, y: -2 }
             ],
             isBlocked: true,
             aparted: -1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -555,12 +581,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 1, y: 1 },
+              { x: -1, y: 1 },
+              { x: 1, y: -1 },
+              { x: -1, y: -1 }
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            allowedRange: [{ x: 3, y: 9 }, { x: 3, y: 7 }, { x: 5, y: 9 }, { x: 5, y: 7 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -571,12 +600,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 1, y: 1 },
+              { x: -1, y: 1 },
+              { x: 1, y: -1 },
+              { x: -1, y: -1 }
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            allowedRange: [{ x: 3, y: 9 }, { x: 3, y: 7 }, { x: 5, y: 9 }, { x: 5, y: 7 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -587,12 +619,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 0, y: 1 },
+              { x: 1, y: 0 },
+              { x: 0, y: -1 },
+              { x: -1, y: 0 }
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            allowedRange: [{ x: 3, y: 9 }, { x: 3, y: 7 }, { x: 5, y: 9 }, { x: 5, y: 7 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -603,12 +638,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
+              { x: 0, y: -1 }, { x: 0, y: -2 }, { x: 0, y: -3 }, { x: 0, y: -4 }, { x: 0, y: -5 }, { x: 0, y: -6 }, { x: 0, y: -7 }, { x: 0, y: -8 }, { x: 0, y: -9 },//下
+              { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 },//右
+              { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
-            aparted: -1,
+            aparted: 1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         },
@@ -619,12 +657,15 @@ export default defineComponent({
           isRed: false,
           rules: {
             allowed: [
-              { x: 1, y: 1 }
+              { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }, { x: 0, y: 4 }, { x: 0, y: 5 }, { x: 0, y: 6 }, { x: 0, y: 7 }, { x: 0, y: 8 }, { x: 0, y: 9 },//上
+              { x: 0, y: -1 }, { x: 0, y: -2 }, { x: 0, y: -3 }, { x: 0, y: -4 }, { x: 0, y: -5 }, { x: 0, y: -6 }, { x: 0, y: -7 }, { x: 0, y: -8 }, { x: 0, y: -9 },//下
+              { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 },//右
+              { x: -1, y: 0 }, { x: -2, y: 0 }, { x: -3, y: 0 }, { x: -4, y: 0 }, { x: -5, y: 0 }, { x: -6, y: 0 }, { x: -7, y: 0 }, { x: -8, y: 0 }, { x: -9, y: 0 }//左
             ],
             isBlocked: true,
-            aparted: -1,
+            aparted: 1,
             allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
-            addAllowed: [{ x: 1, y: 0 }, { x: -1, y: 0 }],
+            addAllowed: [],
             isOverRiver: false
           }
         }
@@ -647,6 +688,11 @@ export default defineComponent({
         return
       }
     },
+    //切换阵营
+    switchCamp() {
+      this.currentCamp = !this.currentCamp
+      this.runCamp = !this.runCamp
+    },
     //处理点击事件
     handleCellClick(x: number, y: number) {
       const key = this.checkQiZiClick(x, y)
@@ -657,6 +703,8 @@ export default defineComponent({
         this.moveQiZi(x, y, selectedQiZi)
         selectedKey = null
         this.possibleMoves = []
+        //切换阵营
+        this.switchCamp()
         return
       }
       // 已有选中棋子，且点击的是“不可落点”（包括敌方棋子）
@@ -704,6 +752,16 @@ export default defineComponent({
       }
 
       this.updateBoard()
+
+      // 将军检测：每次移动后检测对方是否被将军
+      const checkResult = this.checkIsInCheck(chess, { x, y })
+      if (checkResult.isCheck) {
+        console.log(`🚨 ${checkResult.message}`)
+        if (checkResult.isCheckmate) {
+          // 将死，游戏结束
+          alert(checkResult.message)
+        }
+      }
     },
     //解析走子
     resolveMove(x: number, y: number, chess: ChessPiece) {
@@ -804,6 +862,10 @@ export default defineComponent({
       moves = this.filterOutOfBoard(moves)//过滤出棋盘内的位置
       moves = this.filterEatRule(chess, moves)//过滤吃子规则
       moves = this.filterOutOfRange(chess, moves)//过滤掉不在活动范围内的路径
+
+      // 过滤掉会让己方处于被将军状态的移动（不能送将或应将后仍被将）
+      moves = this.filterMovesInCheck(chess, moves)
+
       console.log(
         chess.name,
         '当前位置', chess.x, chess.y,
@@ -811,6 +873,59 @@ export default defineComponent({
       )
 
       return moves
+    },
+
+    /**
+     * 过滤掉会让己方处于被将军状态的移动
+     * 1. 如果当前被将军，必须选择能解除将军的移动
+     * 2. 即使当前没被将军，也不能走出让己方被将军的棋（送将）
+     * @param chess - 要移动的棋子
+     * @param moves - 当前可移动位置列表
+     * @returns 过滤后的合法移动列表
+     */
+    filterMovesInCheck(chess: ChessPiece, moves: ChessPosition[]): ChessPosition[] {
+      return moves.filter(move => {
+        return !this.willMoveLeaveInCheck(chess, move)
+      })
+    },
+
+    /**
+     * 检测某次移动后己方是否会处于被将军状态
+     * @param chess - 要移动的棋子
+     * @param targetPos - 目标位置
+     * @returns true 表示移动后己方会被将军（不合法移动）
+     */
+    willMoveLeaveInCheck(chess: ChessPiece, targetPos: ChessPosition): boolean {
+      // 保存原始状态
+      const originalX = chess.x
+      const originalY = chess.y
+
+      // 检查目标位置是否有棋子（可能会被吃掉）
+      const targetKey = this.findPieceKeyAt(targetPos.x, targetPos.y)
+      const capturedPiece = targetKey ? this.qiZiArray[targetKey] : null
+
+      // 模拟移动
+      chess.x = targetPos.x
+      chess.y = targetPos.y
+
+      // 如果吃子，临时移除被吃的棋子
+      if (targetKey && capturedPiece) {
+        delete this.qiZiArray[targetKey]
+      }
+
+      // 检测己方是否会被将军
+      const willBeInCheck = this.isInCheck(chess.isRed)
+
+      // 恢复状态
+      chess.x = originalX
+      chess.y = originalY
+
+      // 恢复被吃的棋子
+      if (targetKey && capturedPiece) {
+        this.qiZiArray[targetKey] = capturedPiece
+      }
+
+      return willBeInCheck
     },
     //生成所有可走点
     generateMoves(chess: ChessPiece) {
@@ -993,6 +1108,327 @@ export default defineComponent({
         }
       }
       console.log("更新棋盘", this.board);
+    },
+
+    // ==================== 将军检测系统 ====================
+
+    /**
+     * 查找指定阵营的将/帅
+     * @param isRed - true 查找红方帅，false 查找黑方将
+     * @returns 将/帅棋子对象，未找到返回 null
+     */
+    findKing(isRed: boolean): ChessPiece | null {
+      for (const key of Object.keys(this.qiZiArray)) {
+        const piece = this.qiZiArray[key]
+        if (piece && piece.isRed === isRed) {
+          // 红方是"帅"，黑方是"将"
+          if ((isRed && piece.name === '帅') || (!isRed && piece.name === '将')) {
+            return piece
+          }
+        }
+      }
+      return null
+    },
+
+    /**
+     * 获取某棋子的所有可攻击位置（用于检测将军）
+     * 这类似于 checkMove，但专门用于判断攻击范围
+     * @param chess - 棋子对象
+     * @returns 该棋子所有可攻击到的位置数组
+     */
+    getAttackMoves(chess: ChessPiece): ChessPosition[] {
+      let moves = this.generateMoves(chess)
+      moves = this.filterOutOfBoard(moves)
+
+      // 过滤路径阻挡和吃子规则
+      return moves.filter(pos => {
+        const targetKey = this.findPieceKeyAt(pos.x, pos.y)
+        const target = targetKey ? this.qiZiArray[targetKey] : null
+
+        // 对于空格位置，检查路径是否被阻挡（炮除外）
+        if (!target) {
+          if (!chess.rules.isBlocked) return true
+
+          // 炮不能隔子走空格（但可以隔子吃子）
+          if (chess.rules.aparted >= 0) {
+            const path = this.getPath(chess.x, chess.y, pos.x, pos.y, true)
+            const blockCount = path.filter(p => this.findPieceKeyAt(p.x, p.y)).length
+            return blockCount === 0
+          }
+
+          const path = this.getPath(chess.x, chess.y, pos.x, pos.y, true)
+          const blockCount = path.filter(p => this.findPieceKeyAt(p.x, p.y)).length
+          return blockCount === 0
+        }
+
+        // 对于有目标的位置，使用吃子规则判断
+        return this.canEatLike(chess, pos)
+      })
+    },
+
+    /**
+     * 获取能够攻击到指定位置的敌方棋子列表
+     * @param targetPos - 目标位置
+     * @param isTargetRed - 目标是否是红方（用于确定敌方阵营）
+     * @returns 能攻击到该位置的敌方棋子键名数组
+     */
+    getAttackingPieces(targetPos: ChessPosition, isTargetRed: boolean): string[] {
+      const attackers: string[] = []
+
+      for (const key of Object.keys(this.qiZiArray)) {
+        const piece = this.qiZiArray[key]
+        // 只检查敌方棋子
+        if (piece && piece.isRed !== isTargetRed) {
+          const attackMoves = this.getAttackMoves(piece)
+          // 检查是否能攻击到目标位置
+          if (attackMoves.some(pos => pos.x === targetPos.x && pos.y === targetPos.y)) {
+            attackers.push(key)
+          }
+        }
+      }
+
+      return attackers
+    },
+
+    /**
+     * 检测指定阵营是否处于被将军状态
+     * @param isRed - true 检测红方是否被将军，false 检测黑方
+     * @returns true 表示处于被将军状态
+     */
+    isInCheck(isRed: boolean): boolean {
+      const king = this.findKing(isRed)
+      if (!king) return false
+
+      const kingPos: ChessPosition = { x: king.x, y: king.y }
+      const attackers = this.getAttackingPieces(kingPos, isRed)
+
+      return attackers.length > 0
+    },
+
+    /**
+     * 获取将军的攻击者列表
+     * @param isRed - 被将军方的阵营
+     * @returns 攻击将/帅的敌方棋子键名数组
+     */
+    getCheckingPieces(isRed: boolean): string[] {
+      const king = this.findKing(isRed)
+      if (!king) return []
+
+      const kingPos: ChessPosition = { x: king.x, y: king.y }
+      return this.getAttackingPieces(kingPos, isRed)
+    },
+
+    /**
+     * 检测将/帅是否能通过移动来躲避将军
+     * @param isRed - 被将军方的阵营
+     * @returns true 表示将/帅可以通过移动来解除将军
+     */
+    canKingEscape(isRed: boolean): boolean {
+      const king = this.findKing(isRed)
+      if (!king) return false
+
+      // 获取将/帅的所有合法移动位置
+      const kingMoves = this.checkMove(king)
+
+      // 模拟将/帅移动到每个位置，检测是否仍被将军
+      for (const move of kingMoves) {
+        // 检查移动后该位置是否安全
+        const originalX = king.x
+        const originalY = king.y
+
+        // 临时移动
+        king.x = move.x
+        king.y = move.y
+
+        // 检查移动后是否还被攻击
+        const stillInCheck = this.getAttackingPieces(move, isRed).length > 0
+
+        // 恢复位置
+        king.x = originalX
+        king.y = originalY
+
+        if (!stillInCheck) {
+          return true // 找到安全位置
+        }
+      }
+
+      return false
+    },
+
+    /**
+     * 检测是否能通过己方棋子移动到中间位置来阻挡将军
+     * @param isRed - 被将军方的阵营
+     * @param attackerKey - 发起将军的敌方棋子键名
+     * @returns true 表示可以通过阻挡来解除将军
+     */
+    canBlockCheck(isRed: boolean, attackerKey: string): boolean {
+      const king = this.findKing(isRed)
+      const attacker = this.qiZiArray[attackerKey]
+      if (!king || !attacker) return false
+
+      // 获取攻击者到将/帅之间的路径
+      const path = this.getPath(attacker.x, attacker.y, king.x, king.y, true)
+
+      // 如果路径为空（马的攻击等），则无法阻挡
+      if (path.length === 0) return false
+
+      // 检查己方每个棋子是否能移动到路径上的任意位置
+      for (const key of Object.keys(this.qiZiArray)) {
+        const piece = this.qiZiArray[key]
+        // 只检查己方棋子，且不是将/帅本身
+        if (piece && piece.isRed === isRed && piece.name !== '帅' && piece.name !== '将') {
+          const moves = this.checkMove(piece)
+
+          // 检查是否能移动到路径上的任意位置
+          for (const pathPos of path) {
+            if (moves.some(m => m.x === pathPos.x && m.y === pathPos.y)) {
+              // 模拟移动，检查移动后是否仍被将军
+              const originalX = piece.x
+              const originalY = piece.y
+
+              piece.x = pathPos.x
+              piece.y = pathPos.y
+
+              const stillInCheck = this.isInCheck(isRed)
+
+              piece.x = originalX
+              piece.y = originalY
+
+              if (!stillInCheck) {
+                return true
+              }
+            }
+          }
+        }
+      }
+
+      return false
+    },
+
+    /**
+     * 检测是否能通过吃掉攻击者来解除将军
+     * @param isRed - 被将军方的阵营
+     * @param attackerKey - 发起将军的敌方棋子键名
+     * @returns true 表示可以通过吃掉攻击者来解除将军
+     */
+    canCaptureAttacker(isRed: boolean, attackerKey: string): boolean {
+      const attacker = this.qiZiArray[attackerKey]
+      if (!attacker) return false
+
+      const attackerPos: ChessPosition = { x: attacker.x, y: attacker.y }
+
+      // 检查己方每个棋子是否能吃掉攻击者
+      for (const key of Object.keys(this.qiZiArray)) {
+        const piece = this.qiZiArray[key]
+        if (piece && piece.isRed === isRed) {
+          const moves = this.checkMove(piece)
+
+          if (moves.some(m => m.x === attackerPos.x && m.y === attackerPos.y)) {
+            // 模拟吃子，检查吃子后是否仍被将军
+            const originalX = piece.x
+            const originalY = piece.y
+            const capturedPiece = this.qiZiArray[attackerKey]
+
+            // 临时移动
+            piece.x = attackerPos.x
+            piece.y = attackerPos.y
+            delete this.qiZiArray[attackerKey]
+
+            const stillInCheck = this.isInCheck(isRed)
+
+            // 恢复状态
+            piece.x = originalX
+            piece.y = originalY
+            if (capturedPiece) {
+              this.qiZiArray[attackerKey] = capturedPiece
+            }
+
+            if (!stillInCheck) {
+              return true
+            }
+          }
+        }
+      }
+
+      return false
+    },
+
+    /**
+     * 检测是否将死（无法解除将军状态）
+     * @param isRed - 被将军方的阵营
+     * @returns true 表示将死，游戏结束
+     */
+    isCheckmate(isRed: boolean): boolean {
+      // 首先确认是否处于被将军状态
+      if (!this.isInCheck(isRed)) {
+        return false
+      }
+
+      const attackers = this.getCheckingPieces(isRed)
+
+      // 检查三种解除将军的方式
+
+      // 1. 将/帅能否逃跑
+      if (this.canKingEscape(isRed)) {
+        return false
+      }
+
+      // 2. 能否吃掉攻击者（如果只有一个攻击者）
+      // 注意：如果有多个攻击者，通常只能通过移动将/帅来解除
+      if (attackers.length === 1) {
+        const attacker = attackers[0]
+        if (attacker) {
+          if (this.canCaptureAttacker(isRed, attacker)) {
+            return false
+          }
+
+          // 3. 能否阻挡攻击
+          if (this.canBlockCheck(isRed, attacker)) {
+            return false
+          }
+        }
+      }
+
+      // 无法解除将军，判定为将死
+      return true
+    },
+
+    /**
+     * 综合检测将军状态（主入口函数）
+     * 这个函数在每次移动后调用，检测对方是否被将军或将死
+     * @param chess - 刚刚移动的棋子
+     * @param pos - 移动到的位置
+     * @returns { isCheck: boolean, isCheckmate: boolean, message: string }
+     * isCheck: 是否被将军
+     * isCheckmate: 是否将死
+     * message: 消息
+     */
+    checkIsInCheck(chess: ChessPiece, _pos: ChessPosition): { isCheck: boolean; isCheckmate: boolean; message: string } {
+      // 检测对方是否被将军（刚走棋的一方将对方）
+      const opponentIsRed = !chess.isRed
+
+      const isCheck = this.isInCheck(opponentIsRed)
+
+      if (!isCheck) {
+        return { isCheck: false, isCheckmate: false, message: '' }
+      }
+
+      const isCheckmate = this.isCheckmate(opponentIsRed)
+
+      if (isCheckmate) {
+        const winner = chess.isRed ? '红方' : '黑方'
+        return {
+          isCheck: true,
+          isCheckmate: true,
+          message: `将死！${winner}获胜！`
+        }
+      }
+
+      return {
+        isCheck: true,
+        isCheckmate: false,
+        message: `将军！${opponentIsRed ? '红方' : '黑方'}请应将！`
+      }
     }
   },
   //mounted只在组件创建时执行一次
