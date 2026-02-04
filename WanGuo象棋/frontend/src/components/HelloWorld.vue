@@ -15,6 +15,17 @@
           <div v-if="possibleMoves.some(p => p.x === x - 1 && p.y === y - 1)" class="possible-move"></div>
         </div>
       </div>
+      <svg class="trajectory-overlay">
+        <g v-for="(path, index) in movePath" :key="index">
+          <!-- 绘制路径线 -->
+          <line :x1="path.from.x * 50 + 25" :y1="path.from.y * 50 + 25" :x2="path.to.x * 50 + 25"
+            :y2="path.to.y * 50 + 25" stroke="rgba(255, 165, 0, 0.6)" stroke-width="3" stroke-linecap="round" />
+          <!-- 绘制起点圆点 -->
+          <circle :cx="path.from.x * 50 + 25" :cy="path.from.y * 50 + 25" r="4" fill="rgba(255, 165, 0, 0.8)" />
+          <!-- 绘制终点箭头（简单的三角形或圆点模拟） -->
+          <circle :cx="path.to.x * 50 + 25" :cy="path.to.y * 50 + 25" r="4" fill="rgba(255, 69, 0, 0.8)" />
+        </g>
+      </svg>
     </div>
     <p>规则：点击车选中，再点击目标位置移动（横竖直走）</p>
   </div>
@@ -53,7 +64,11 @@ interface ChessPieceInBoard {
   y: number;
   isRed: boolean;
 }
-
+//棋子运动轨迹
+interface MovePath {
+  from: ChessPosition;
+  to: ChessPosition;
+}
 // 棋子集合类型（键是棋子标识，如 car、horse 等）
 interface ChessCollection {
   [key: string]: ChessPiece;
@@ -65,7 +80,7 @@ interface FusionCollection {
 //缓存选中的棋子
 let selectedKey: string | null = null
 //棋子运动轨迹
-let movePath: ChessPosition[] = []
+
 export default defineComponent({
   data() {
     return {
@@ -75,6 +90,7 @@ export default defineComponent({
       runCamp: true,//true表示红方，false表示黑方
       board: [] as (ChessPieceInBoard | null)[][],//棋盘
       possibleMoves: [] as { x: number, y: number }[],//可落点位置
+      movePath: [] as MovePath[], // 棋子运动轨迹
       //棋子集合
       qiZiArray: {
         car: {
@@ -746,6 +762,9 @@ export default defineComponent({
     moveQiZi(x: number, y: number, chess: ChessPiece) {
       if (!this.objectArrayIncludes(this.possibleMoves, { x, y })) return
 
+      // 记录起始位置
+      const fromPos = { x: chess.x, y: chess.y }
+
       const result = this.resolveMove(x, y, chess)
 
       if (result === 'move' || result === 'eat') {
@@ -758,6 +777,9 @@ export default defineComponent({
       } else {
         chess.rules.isOverRiver = false
       }
+
+      //记录运动轨迹
+      this.movePath = [{ from: fromPos, to: { x, y } }]
 
       this.updateBoard()
 
@@ -1483,6 +1505,8 @@ export default defineComponent({
   border: 2px solid #333;
   width: fit-content;
   margin: 20px 0;
+  position: relative;
+  /* 为SVG绝对定位做准备 */
 }
 
 /* 每一行的样式 */
@@ -1550,5 +1574,17 @@ export default defineComponent({
 
 .black {
   background-color: #000;
+}
+
+.trajectory-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* 确保不阻挡点击事件 */
+  z-index: 2;
+  /* 位于棋子上方或下方，视需求而定，这里放在上方以便看清 */
 }
 </style>
