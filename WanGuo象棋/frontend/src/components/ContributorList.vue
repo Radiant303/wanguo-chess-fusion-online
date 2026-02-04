@@ -28,6 +28,16 @@ import sheijiaxiaohaiAvatar from '../assets/sheijiaxiaohai.jpg';
 import guyingAvatar from '../assets/guying.jpg';
 import abaoAvatar from '../assets/abao.jpg';
 import wangyuanjingAvatar from '../assets/wangyuanjing.jpg';
+import xuebiAvatar from '../assets/xuebi.jpg';
+import tuziAvatar from '../assets/tuzi.jpg';
+import qunchuwolaoAvatar from '../assets/qunchuwolao.jpg';
+import niaoAvatar from '../assets/niao.jpg';
+import mumingAvatar from '../assets/muming.jpg';
+import chenchengchuanAvatar from '../assets/chenchengchuan.jpg';
+import xiangjiaoshuAvatar from '../assets/xiangjiaoshu.jpg';
+import laoyeAvatar from '../assets/laoye.jpg';
+import nichengweiguiAvatar from '../assets/nichengweigui.jpg';
+import pofangAvatar from '../assets/pofang.jpg';
 // Simple SVG placeholder data URI for empty avatars
 export default defineComponent({
     name: 'ContributorList',
@@ -81,6 +91,66 @@ export default defineComponent({
                     role: '核心贡献者',
                     description: '提供了宝贵意见',
                     avatar: wangyuanjingAvatar
+                },
+                {
+                    name: '雪碧',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: xuebiAvatar
+                },
+                {
+                    name: '兔子',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: tuziAvatar
+                },
+                {
+                    name: '群除我老',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: qunchuwolaoAvatar
+                },
+                {
+                    name: '已从人才库回归 Tiel',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: niaoAvatar
+                },
+                {
+                    name: '慕明',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: mumingAvatar
+                },
+                {
+                    name: '晨成船',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: chenchengchuanAvatar
+                },
+                {
+                    name: '爱吃香蕉的橡胶树.',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: xiangjiaoshuAvatar
+                },
+                {
+                    name: '佬也?牛也?新手是也',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: laoyeAvatar
+                },
+                {
+                    name: '该昵称涉嫌违规',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: nichengweiguiAvatar
+                },
+                {
+                    name: '被揭短后破防',
+                    role: '核心贡献者',
+                    description: '提供了宝贵意见',
+                    avatar: pofangAvatar
                 },
             ]
         }
