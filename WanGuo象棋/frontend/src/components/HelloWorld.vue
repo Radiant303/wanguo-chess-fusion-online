@@ -64,6 +64,8 @@ interface FusionCollection {
 }
 //缓存选中的棋子
 let selectedKey: string | null = null
+//棋子运动轨迹
+let movePath: ChessPosition[] = []
 export default defineComponent({
   data() {
     return {
@@ -550,7 +552,7 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            allowedRange: [{ x: 0, y: 5 }, { x: 8, y: 5 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
             addAllowed: [],
             isOverRiver: false
           }
@@ -569,7 +571,7 @@ export default defineComponent({
             ],
             isBlocked: true,
             aparted: -1,
-            allowedRange: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
+            allowedRange: [{ x: 0, y: 5 }, { x: 8, y: 5 }, { x: 0, y: 9 }, { x: 8, y: 9 }],
             addAllowed: [],
             isOverRiver: false
           }
@@ -696,9 +698,15 @@ export default defineComponent({
     //处理点击事件
     handleCellClick(x: number, y: number) {
       const key = this.checkQiZiClick(x, y)
+      //已有选中棋子且点击的是己方棋子
+      if (key && selectedKey && this.qiZiArray[key]!.isRed == this.currentCamp) {
+        selectedKey = key
+        const selectedQiZi = this.qiZiArray[key] as ChessPiece
+        this.possibleMoves = this.checkMove(selectedQiZi)
+      }
 
       // 已有选中棋子，且点击的是“可落点”（包括敌方棋子）
-      if (selectedKey && this.objectArrayIncludes(this.possibleMoves, { x, y })) {
+      else if (selectedKey && this.objectArrayIncludes(this.possibleMoves, { x, y })) {
         const selectedQiZi = this.qiZiArray[selectedKey] as ChessPiece
         this.moveQiZi(x, y, selectedQiZi)
         selectedKey = null
@@ -828,7 +836,7 @@ export default defineComponent({
       // 同阵营
       if (chess.isRed !== target.isRed) return 0
 
-      for (const [resultKey, needs] of Object.entries(this.fusionArray)) {
+      for (const needs of Object.values(this.fusionArray)) {
         if (needs[0] === chess.name && needs[1] === target.name) {
           return 2
         }
@@ -890,10 +898,10 @@ export default defineComponent({
     },
 
     /**
-     * 检测某次移动后己方是否会处于被将军状态
+     * 检测某次移动后己方是否会处于被将军状态（包括照面）
      * @param chess - 要移动的棋子
      * @param targetPos - 目标位置
-     * @returns true 表示移动后己方会被将军（不合法移动）
+     * @returns true 表示移动后己方会被将军或照面（不合法移动）
      */
     willMoveLeaveInCheck(chess: ChessPiece, targetPos: ChessPosition): boolean {
       // 保存原始状态
@@ -913,11 +921,8 @@ export default defineComponent({
         delete this.qiZiArray[targetKey]
       }
 
-      // 检测己方是否会被将军
+      // 检测己方是否会被将军（isInCheck 已包含照面检测）
       const willBeInCheck = this.isInCheck(chess.isRed)
-
-      // 检测是否会导致将帅碰面
-      const willCauseKingsFacing = this.isKingsFacing()
 
       // 恢复状态
       chess.x = originalX
@@ -928,42 +933,7 @@ export default defineComponent({
         this.qiZiArray[targetKey] = capturedPiece
       }
 
-      // 如果被将军或导致将帅碰面，都是不合法的移动
-      return willBeInCheck || willCauseKingsFacing
-    },
-
-    /**
-     * 检测将和帅是否直接碰面（在同一纵列且中间没有棋子阻挡）
-     * 根据中国象棋规则，将帅不能直接面对面
-     * @returns true 表示将帅正在碰面（不合法状态）
-     */
-    isKingsFacing(): boolean {
-      // 查找红方帅和黑方将
-      const redKing = this.findKing(true)   // 红方帅
-      const blackKing = this.findKing(false) // 黑方将
-
-      if (!redKing || !blackKing) {
-        return false
-      }
-
-      // 检查是否在同一纵列（x坐标相同）
-      if (redKing.x !== blackKing.x) {
-        return false // 不在同一列，不可能碰面
-      }
-
-      // 检查两者之间是否有棋子阻挡
-      const minY = Math.min(redKing.y, blackKing.y)
-      const maxY = Math.max(redKing.y, blackKing.y)
-
-      // 遍历将帅之间的所有位置
-      for (let y = minY + 1; y < maxY; y++) {
-        if (this.findPieceKeyAt(redKing.x, y)) {
-          return false // 找到阻挡的棋子，不是碰面
-        }
-      }
-
-      // 同一列且中间没有棋子，将帅碰面！
-      return true
+      return willBeInCheck
     },
     //生成所有可走点
     generateMoves(chess: ChessPiece) {
@@ -1230,6 +1200,7 @@ export default defineComponent({
 
     /**
      * 检测指定阵营是否处于被将军状态
+     * 包括两种情况：1. 被敌方棋子攻击  2. 将帅照面（同列无子阻挡）
      * @param isRed - true 检测红方是否被将军，false 检测黑方
      * @returns true 表示处于被将军状态
      */
@@ -1240,7 +1211,33 @@ export default defineComponent({
       const kingPos: ChessPosition = { x: king.x, y: king.y }
       const attackers = this.getAttackingPieces(kingPos, isRed)
 
-      return attackers.length > 0
+      // 情况1: 被敌方棋子攻击
+      if (attackers.length > 0) {
+        return true
+      }
+
+      // 情况2: 检查将帅照面（同列无子阻挡）
+      const opponentKing = this.findKing(!isRed)
+      if (opponentKing && king.x === opponentKing.x) {
+        const minY = Math.min(king.y, opponentKing.y)
+        const maxY = Math.max(king.y, opponentKing.y)
+
+        // 检查中间是否有棋子阻挡
+        let hasBlocker = false
+        for (let y = minY + 1; y < maxY; y++) {
+          if (this.findPieceKeyAt(king.x, y)) {
+            hasBlocker = true
+            break
+          }
+        }
+
+        // 无阻挡 → 照面！视为被将军
+        if (!hasBlocker) {
+          return true
+        }
+      }
+
+      return false
     },
 
     /**
