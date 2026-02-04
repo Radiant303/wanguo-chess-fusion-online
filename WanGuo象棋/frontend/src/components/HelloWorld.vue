@@ -1,38 +1,93 @@
 <template>
-  <div class="chess-container">
-    <h2>单个车的移动演示</h2>
-    <div class="chessboard">
-      <!-- 棋盘网格 -->
-      <div v-for="y in 10" :key="'row-' + y" class="row">
-        <div v-for="x in 9" :key="'cell-' + x + '-' + y" class="cell" @click="checkCamp(x - 1, y - 1)">
-          <!-- 显示棋盘中的棋子 -->
-          <div v-if="board[y - 1] && board[y - 1]![x - 1]"
-            :class="'piece' + (board[y - 1]![x - 1]!.isRed ? ' red' : ' black')">
-            {{ board[y - 1]![x - 1]!.name }}
-          </div>
+  <div class="chessboard" :style="{ '--cell-size': cellSize + 'px' }">
+    <!-- 棋盘底层背景与网格 SVG -->
+    <svg class="board-svg" :width="cellSize * 9" :height="cellSize * 10" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
 
-          <!-- 显示可落点位置 -->
-          <div v-if="possibleMoves.some(p => p.x === x - 1 && p.y === y - 1)" class="possible-move"></div>
+      <!-- 背景 -->
+      <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.1)" rx="8" />
+
+      <!-- 边框 -->
+      <rect :x="cellSize * 0.5 - 2" :y="cellSize * 0.5 - 2" :width="cellSize * 8 + 4" :height="cellSize * 9 + 4"
+        fill="none" stroke="rgba(0,0,0,1)" stroke-width="0" />
+
+      <!-- 横线 (10条) -->
+      <line v-for="i in 10" :key="'h-' + i" :x1="cellSize * 0.5" :y1="cellSize * (i - 0.5)" :x2="cellSize * 8.5"
+        :y2="cellSize * (i - 0.5)" stroke="rgba(0,0,0,1)" stroke-width="0.5" />
+
+      <!-- 竖线 (上半部分 5条) -->
+      <line v-for="i in 7" :key="'v-top-' + i" :x1="cellSize * (i + 0.5)" :y1="cellSize * 0.5"
+        :x2="cellSize * (i + 0.5)" :y2="cellSize * 4.5" stroke="rgba(0,0,0,1)" stroke-width="0.5" />
+
+      <!-- 竖线 (下半部分 5条) -->
+      <line v-for="i in 7" :key="'v-bottom-' + i" :x1="cellSize * (i + 0.5)" :y1="cellSize * 5.5"
+        :x2="cellSize * (i + 0.5)" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)" stroke-width="0.5" />
+
+      <!-- 左右两侧贯通的竖线 -->
+      <line :x1="cellSize * 0.5" :y1="cellSize * 0.5" :x2="cellSize * 0.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+        stroke-width="0.5" />
+      <line :x1="cellSize * 8.5" :y1="cellSize * 0.5" :x2="cellSize * 8.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+        stroke-width="0.5" />
+
+      <!-- 九宫格斜线 (红方) -->
+      <line :x1="cellSize * 3.5" :y1="cellSize * 0.5" :x2="cellSize * 5.5" :y2="cellSize * 2.5" stroke="rgba(0,0,0,1)"
+        stroke-width="0.5" />
+      <line :x1="cellSize * 5.5" :y1="cellSize * 0.5" :x2="cellSize * 3.5" :y2="cellSize * 2.5" stroke="rgba(0,0,0,1)"
+        stroke-width="0.5" />
+
+      <!-- 九宫格斜线 (黑方) -->
+      <line :x1="cellSize * 3.5" :y1="cellSize * 7.5" :x2="cellSize * 5.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+        stroke-width="0.5" />
+      <line :x1="cellSize * 5.5" :y1="cellSize * 7.5" :x2="cellSize * 3.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+        stroke-width="0.5" />
+
+      <!-- 楚河汉界 文字 -->
+      <text :x="cellSize * 2.5" :y="cellSize * 5 + 6" fill="rgba(0,0,0,0.3)" font-size="24" font-family="KaiTi"
+        text-anchor="middle" dominant-baseline="middle" style="pointer-events: none;">楚 河</text>
+      <text :x="cellSize * 6.5" :y="cellSize * 5 + 6" fill="rgba(0,0,0,0.3)" font-size="24" font-family="KaiTi"
+        text-anchor="middle" dominant-baseline="middle" style="pointer-events: none;">汉 界</text>
+
+      <!-- 炮和兵的特殊标记 (可选，这里只做简单的示例，可以添加十字标记) -->
+    </svg>
+
+    <!-- 棋盘网格 (Interactive Layer) -->
+    <div v-for="y in 10" :key="'row-' + y" class="row">
+      <div v-for="x in 9" :key="'cell-' + x + '-' + y" class="cell" @click="checkCamp(x - 1, y - 1)">
+        <!-- 显示棋盘中的棋子 -->
+        <div v-if="board[y - 1] && board[y - 1]![x - 1]" :class="['chess-piece',
+          board[y - 1]![x - 1]!.isRed ? 'piece-red' : 'piece-black',
+          possibleMoves.some(p => p.x === x - 1 && p.y === y - 1) ? 'targetable' : '',
+          movePath.some(p => p.to.x === x - 1 && p.to.y === y - 1) ? 'last-move' : '']"
+          :style="{ animationDelay: '-' + ((x + y * 9) % 10) + 's' }">
+          <span :style="{ animationDelay: '-' + ((x + y * 13) % 10) + 's' }">{{ board[y - 1]![x - 1]!.name }}</span>
         </div>
+
+        <!-- 起点标记：显示上一步的起始位置 -->
+        <div v-if="movePath.some(p => p.from.x === x - 1 && p.from.y === y - 1)" class="start-marker"></div>
+
+        <!-- 显示可落点位置（仅空格子显示绿点） -->
+        <div v-if="possibleMoves.some(p => p.x === x - 1 && p.y === y - 1) && !(board[y - 1] && board[y - 1]![x - 1])"
+          class="possible-move"></div>
       </div>
-      <svg class="trajectory-overlay">
-        <g v-for="(path, index) in movePath" :key="index">
-          <!-- 绘制路径线 -->
-          <line :x1="path.from.x * 50 + 25" :y1="path.from.y * 50 + 25" :x2="path.to.x * 50 + 25"
-            :y2="path.to.y * 50 + 25" stroke="rgba(255, 165, 0, 0.6)" stroke-width="3" stroke-linecap="round" />
-          <!-- 绘制起点圆点 -->
-          <circle :cx="path.from.x * 50 + 25" :cy="path.from.y * 50 + 25" r="4" fill="rgba(255, 165, 0, 0.8)" />
-          <!-- 绘制终点箭头（简单的三角形或圆点模拟） -->
-          <circle :cx="path.to.x * 50 + 25" :cy="path.to.y * 50 + 25" r="4" fill="rgba(255, 69, 0, 0.8)" />
-        </g>
-      </svg>
     </div>
-    <p>规则：点击车选中，再点击目标位置移动（横竖直走）</p>
+
+    <!-- 路径图层：保留结构备用 -->
+    <svg class="trajectory-overlay"></svg>
+    <!-- 爆炸粒子容器 -->
+    <div ref="explosionContainer" class="explosion-container"></div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import eatMusic from '../assets/audio/eat.mp3';
+import fusionMusic from '../assets/audio/fusion.mp3';
+import moveMusic from '../assets/audio/move.mp3';
 // 坐标类型（移动规则中的x/y）
 interface ChessPosition {
   x: number;
@@ -84,6 +139,9 @@ let selectedKey: string | null = null
 export default defineComponent({
   data() {
     return {
+      // 棋盘基础尺寸配置
+      cellSize: 50,
+
       //当前阵营
       currentCamp: true,//true表示红方，false表示黑方
       //轮到走棋的阵营
@@ -698,6 +756,13 @@ export default defineComponent({
     };
   },
   methods: {
+    // 获取棋子在SVG画布上的坐标（中心点）
+    getPieceCanvasPos(pos: ChessPosition) {
+      return {
+        x: pos.x * this.cellSize + this.cellSize / 2,
+        y: pos.y * this.cellSize + this.cellSize / 2
+      }
+    },
     //阵营检测
     checkCamp(x: number, y: number) {
       if (this.currentCamp == this.runCamp) {
@@ -711,14 +776,102 @@ export default defineComponent({
       this.currentCamp = !this.currentCamp
       this.runCamp = !this.runCamp
     },
+    //触发爆炸动画
+    triggerExplosion(droplets: HTMLElement[]) {
+      requestAnimationFrame(() => {
+        droplets.forEach(drop => {
+          const dx = parseFloat(drop.dataset.dx || '0')
+          const dy = parseFloat(drop.dataset.dy || '0')
+          drop.style.transform = `translate(${dx}px, ${dy}px) scale(0)`
+          drop.style.opacity = '0'
+        })
+      })
+      // 动画结束后移除粒子
+      setTimeout(() => {
+        droplets.forEach(drop => drop.remove())
+      }, 1500)
+    },
+    //执行爆炸效果
+    performExplosion(pieceX: number, pieceY: number, isRed: boolean) {
+      const container = this.$refs.explosionContainer as HTMLElement
+      if (!container) return
+
+      // 颜色设置
+      let baseColor: string, glowColor: string
+      if (isRed) {
+        baseColor = '#ff3d00'
+        glowColor = '#b71c1c'
+      } else {
+        baseColor = '#212121'
+        glowColor = '#000000'
+      }
+
+      // 计算爆炸中心位置 (格子大小50px, 中心偏移25px)
+      const cx = pieceX * 50 + 25
+      const cy = pieceY * 50 + 25
+
+      const droplets: HTMLElement[] = []
+      const count = 16 + Math.random() * 8
+
+      for (let i = 0; i < count; i++) {
+        const drop = document.createElement('div')
+
+        // 粒子大小
+        const size = 3 + Math.random() * 9
+
+        // 应用所有样式内联（因为scoped CSS不适用于动态创建的元素）
+        Object.assign(drop.style, {
+          position: 'absolute',
+          borderRadius: '54% 46% 42% 58% / 50% 45% 55% 50%',
+          pointerEvents: 'none',
+          zIndex: '150',
+          transformOrigin: 'center center',
+          opacity: '1',
+          transition: 'transform 1.2s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 0.2s ease-in 1.0s',
+          boxShadow: `inset 2px 2px 4px rgba(255, 255, 255, 0.6), inset -2px -2px 4px rgba(0, 0, 0, 0.2), inset 0 0 6px ${glowColor}, 2px 2px 4px rgba(0, 0, 0, 0.15)`,
+          backgroundColor: baseColor,
+          width: size + 'px',
+          height: size + 'px',
+          left: (cx - size / 2) + 'px',
+          top: (cy - size / 2) + 'px'
+        })
+
+        // 随机爆炸方向
+        const angle = Math.random() * Math.PI * 2
+        const dist = 50 + Math.random() * 70
+        drop.dataset.dx = String(Math.cos(angle) * dist)
+        drop.dataset.dy = String(Math.sin(angle) * dist)
+
+        droplets.push(drop)
+        container.appendChild(drop)
+      }
+
+      this.triggerExplosion(droplets)
+    },
+    // 播放音效
+    playAudio(name: string) {
+      const audio = new Audio(name)
+      audio.play()
+    },
     //处理点击事件
     handleCellClick(x: number, y: number) {
       const key = this.checkQiZiClick(x, y)
-      //已有选中棋子且点击的是己方棋子
+      //已有选中棋子且点击的是己方棋子且不可融合
       if (key && selectedKey && this.qiZiArray[key]!.isRed == this.currentCamp) {
-        selectedKey = key
-        const selectedQiZi = this.qiZiArray[key] as ChessPiece
-        this.possibleMoves = this.checkMove(selectedQiZi)
+        const fusion = this.canFusion(selectedKey, key)
+        if (fusion === 3) {
+          selectedKey = key
+          const selectedQiZi = this.qiZiArray[key] as ChessPiece
+          this.possibleMoves = this.checkMove(selectedQiZi)
+        } else if (selectedKey && this.objectArrayIncludes(this.possibleMoves, { x, y })) {
+          const selectedQiZi = this.qiZiArray[selectedKey] as ChessPiece
+          this.moveQiZi(x, y, selectedQiZi)
+          selectedKey = null
+          this.possibleMoves = []
+          //切换阵营
+          this.switchCamp()
+          return
+        }
       }
 
       // 已有选中棋子，且点击的是“可落点”（包括敌方棋子）
@@ -780,7 +933,7 @@ export default defineComponent({
 
       //记录运动轨迹
       this.movePath = [{ from: fromPos, to: { x, y } }]
-
+      this.playAudio(moveMusic);
       this.updateBoard()
 
       // 将军检测：每次移动后检测对方是否被将军
@@ -815,6 +968,10 @@ export default defineComponent({
 
       // 吃子
       console.log(`😋${chess.isRed ? '红' : '黑'}${chess.name}${chess.x},${chess.y}  吃掉了  ${this.qiZiArray[targetKey]!.isRed ? '红' : '黑'}${this.qiZiArray[targetKey]!.name}${this.qiZiArray[targetKey]!.x},${this.qiZiArray[targetKey]!.y}`)
+      // 触发爆炸效果
+      const targetPiece = this.qiZiArray[targetKey]!
+      this.performExplosion(targetPiece.x, targetPiece.y, targetPiece.isRed)
+      this.playAudio(eatMusic);
       delete this.qiZiArray[targetKey]
       return 'eat'
     },
@@ -842,7 +999,7 @@ export default defineComponent({
               isOverRiver: target.rules.isOverRiver
             }
           }
-
+          this.playAudio(fusionMusic);
           console.log('融合成功', resultName)
           return
         }
@@ -1497,16 +1654,29 @@ export default defineComponent({
 
 <style scoped>
 /* 棋盘容器样式 */
+/* 棋盘组件 */
 .chessboard {
   /* 弹性布局让行垂直排列 */
   display: flex;
   flex-direction: column;
   /* 棋盘边框 */
-  border: 2px solid #333;
   width: fit-content;
-  margin: 20px 0;
+  margin: 20px auto;
   position: relative;
-  /* 为SVG绝对定位做准备 */
+  padding: 0;
+  border-radius: 16px;
+  background: rgba(240, 230, 210, 0.3);
+  /*   backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px); */
+  border: 1.2px solid rgb(0, 0, 0);
+}
+
+.board-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* 每一行的样式 */
@@ -1521,12 +1691,14 @@ export default defineComponent({
   /* 添加这一行 */
   width: 50px;
   height: 50px;
-  border: 1px solid #ccc;
+  box-sizing: border-box;
+  /* 确保格子实际大小为50px */
+  /* border: 1px solid #ccc;  Removed borders */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; Removed background */
 }
 
 /* 可能移动位置的样式 */
@@ -1546,34 +1718,276 @@ export default defineComponent({
   border-radius: 50%;
   z-index: 1;
   /* 确保在棋子之下 */
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
 }
 
-/* 奇偶行单元格背景色交替（可选，增强视觉效果） */
-.row:nth-child(even) .cell:nth-child(odd),
-.row:nth-child(odd) .cell:nth-child(even) {
-  background-color: #e0e0e0;
-}
 
 /* 棋子样式 */
-.piece {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #f00;
-  color: #fff;
+/* 棋子统一样式 - 为适配现有50px格子，调整尺寸 */
+.chess-piece {
+  --piece-size: 44px;
+  width: var(--piece-size);
+  height: var(--piece-size);
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: bold;
+  align-items: center;
+  font-size: 1.4rem;
+  font-family: "KaiTi", "楷体", "STKaiti", serif;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 20;
+  user-select: none;
+
+  /* 果冻形状 */
+  border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+
+  /* 核心光影 */
+  box-shadow:
+    inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+    3px 3px 5px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+
+  /* 动画 */
+  animation: fluid-morph 10s linear infinite;
+  transition: transform 0.4s cubic-bezier(0.34, 1.38, 0.64, 1);
 }
 
-.red {
-  background-color: #f00;
+/* 交互微动 */
+.chess-piece:hover {
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 6px 12px 20px rgba(0, 0, 0, 0.15),
+    8px 8px 15px rgba(0, 0, 0, 0.15),
+    inset -6px -6px 8px rgba(255, 255, 255, 0.8);
+  transform: scale(1.15);
 }
 
-.black {
-  background-color: #000;
+/* 内部高光点 */
+.chess-piece::after {
+  content: '';
+  width: 10px;
+  height: 6px;
+  position: absolute;
+  top: 20%;
+  left: 22%;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  filter: blur(1px);
+  pointer-events: none;
+  transform: rotate(-45deg);
+}
+
+/* 红方 */
+.piece-red {
+  color: #d50000;
+  border: 1px solid rgba(255, 61, 0, 0.2);
+  background-color: rgba(255, 200, 200, 0.15);
+}
+
+/* 黑方 */
+.piece-black {
+  color: #263238;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: rgba(200, 220, 230, 0.15);
+}
+
+/* 上一步落点 - 黄色光环 */
+.last-move {
+  box-shadow:
+    0 0 0 1px rgba(255, 215, 0, 0.4),
+    0 0 12px 2px rgba(255, 215, 0, 0.3),
+    inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+  animation: last-move-pulse 1.5s ease-in-out infinite, fluid-morph 10s linear infinite;
+}
+
+@keyframes last-move-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 157, 255, 0.4),
+      0 0 12px 2px rgba(0, 157, 255, 0.3),
+      inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+      inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(0, 157, 255, 0.6),
+      0 0 12px 3px rgba(0, 157, 255, 0.4),
+      inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+      inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* 起点标记 - 类似旧印记 */
+.start-marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(0, 157, 255, 0.3);
+  /* 淡橙色 */
+  box-shadow: 0 0 4px rgba(0, 157, 255, 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 可被吃的棋子 - 绿色光环 */
+.targetable {
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 0, 0.4),
+    0 0 12px 2px rgba(0, 255, 0, 0.3),
+    inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+  animation: targetable-pulse 1.5s ease-in-out infinite, fluid-morph 10s linear infinite;
+}
+
+@keyframes targetable-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 0, 0.4),
+      0 0 12px 2px rgba(0, 255, 0, 0.3),
+      inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+      inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(0, 255, 0, 0.6),
+      0 0 12px 3px rgba(0, 255, 0, 0.4),
+      inset 4px 6px 10px rgba(0, 0, 0, 0.1),
+      inset -4px -4px 6px rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* 棋子文字样式 - 增加漂浮动画 */
+.chess-piece span {
+  position: relative;
+  z-index: 2;
+  animation: text-float 10s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* 模拟文字在液体中的漂浮感 */
+@keyframes text-float {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  20% {
+    transform: translate(1.5px, -1.5px) rotate(2deg);
+  }
+
+  40% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+
+  60% {
+    transform: translate(-2px, 0.5px) rotate(1deg);
+  }
+
+  80% {
+    transform: translate(1px, -1px) rotate(-2deg);
+  }
+}
+
+/* 核心动画定义 - 果冻变形 */
+@keyframes fluid-morph {
+  0% {
+    border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+  }
+
+  5% {
+    border-radius: 42% 58% 61% 39% / 42% 39% 61% 58%;
+  }
+
+  10% {
+    border-radius: 45% 55% 62% 38% / 45% 38% 62% 55%;
+  }
+
+  15% {
+    border-radius: 49% 51% 62% 38% / 49% 38% 62% 51%;
+  }
+
+  20% {
+    border-radius: 52% 48% 61% 39% / 52% 39% 61% 48%;
+  }
+
+  25% {
+    border-radius: 58% 42% 60% 40% / 58% 40% 60% 42%;
+  }
+
+  30% {
+    border-radius: 60% 40% 55% 45% / 60% 42% 58% 40%;
+  }
+
+  35% {
+    border-radius: 62% 38% 50% 50% / 61% 48% 52% 39%;
+  }
+
+  40% {
+    border-radius: 62% 38% 45% 55% / 61% 52% 48% 39%;
+  }
+
+  45% {
+    border-radius: 60% 40% 42% 58% / 61% 58% 42% 39%;
+  }
+
+  50% {
+    border-radius: 58% 42% 40% 60% / 58% 60% 40% 42%;
+  }
+
+  55% {
+    border-radius: 52% 48% 40% 60% / 55% 61% 39% 45%;
+  }
+
+  60% {
+    border-radius: 48% 52% 40% 60% / 52% 61% 39% 48%;
+  }
+
+  65% {
+    border-radius: 44% 56% 41% 59% / 50% 61% 39% 50%;
+  }
+
+  70% {
+    border-radius: 41% 59% 42% 58% / 48% 62% 38% 52%;
+  }
+
+  75% {
+    border-radius: 40% 60% 45% 55% / 42% 60% 40% 58%;
+  }
+
+  80% {
+    border-radius: 40% 60% 48% 52% / 40% 58% 42% 60%;
+  }
+
+  85% {
+    border-radius: 40% 60% 50% 50% / 40% 52% 48% 60%;
+  }
+
+  90% {
+    border-radius: 40% 60% 55% 45% / 40% 48% 52% 60%;
+  }
+
+  95% {
+    border-radius: 40% 60% 58% 42% / 40% 42% 58% 60%;
+  }
+
+  100% {
+    border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+  }
 }
 
 .trajectory-overlay {
@@ -1586,5 +2000,57 @@ export default defineComponent({
   /* 确保不阻挡点击事件 */
   z-index: 2;
   /* 位于棋子上方或下方，视需求而定，这里放在上方以便看清 */
+}
+
+/* 爆炸粒子容器 */
+.explosion-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 150;
+  overflow: visible;
+}
+
+/* 爆炸水滴粒子 - 高质感液态模拟 */
+.explosion-droplet {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 150;
+
+  /* 初始状态 */
+  transform-origin: center center;
+  opacity: 1;
+
+  /* 动画过渡 */
+  transition:
+    transform 1.2s cubic-bezier(0.1, 0.8, 0.2, 1),
+    opacity 0.2s ease-in 1.0s;
+
+  /* 光影层：模拟折射和高光 */
+  box-shadow:
+    inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 0 6px var(--droplet-color),
+    2px 2px 4px rgba(0, 0, 0, 0.15);
+
+  /* 增加一点形变，让它不像完美圆球 */
+  border-radius: 54% 46% 42% 58% / 50% 45% 55% 50%;
+}
+
+/* 增加高光点 - 让水滴看起来湿润 */
+.explosion-droplet::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+  filter: blur(0.5px);
 }
 </style>

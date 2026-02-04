@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
-import ContributorList from './components/ContributorList.vue'
+/* import ContributorList from './components/ContributorList.vue' */
 </script>
 
 <template>
   <div>
     <HelloWorld />
-    <ContributorList />
+    <!--     <ContributorList /> -->
   </div>
 
 </template>
