@@ -1,85 +1,90 @@
 <template>
-  <div class="chessboard" :style="{ '--cell-size': cellSize + 'px' }">
-    <!-- 棋盘底层背景与网格 SVG -->
-    <svg class="board-svg" :width="cellSize * 9" :height="cellSize * 10" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
+  <div class="chessboard-container">
+    <div class="chessboard" :style="{
+      width: cellSize * 9 + 'px',
+      height: cellSize * 10 + 'px'
+    }">
+      <!-- 棋盘底层背景与网格 SVG -->
+      <svg class="board-svg" :width="cellSize * 9" :height="cellSize * 10" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
 
-      <!-- 背景 -->
-      <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.1)" rx="8" />
+        <!-- 背景 -->
+        <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.1)" rx="8" />
 
-      <!-- 边框 -->
-      <rect :x="cellSize * 0.5 - 2" :y="cellSize * 0.5 - 2" :width="cellSize * 8 + 4" :height="cellSize * 9 + 4"
-        fill="none" stroke="rgba(0,0,0,1)" stroke-width="0" />
+        <!-- 边框 -->
+        <rect :x="cellSize * 0.5 - 2" :y="cellSize * 0.5 - 2" :width="cellSize * 8 + 4" :height="cellSize * 9 + 4"
+          fill="none" stroke="rgba(0,0,0,1)" stroke-width="0" />
 
-      <!-- 横线 (10条) -->
-      <line v-for="i in 10" :key="'h-' + i" :x1="cellSize * 0.5" :y1="cellSize * (i - 0.5)" :x2="cellSize * 8.5"
-        :y2="cellSize * (i - 0.5)" stroke="rgba(0,0,0,1)" stroke-width="0.5" />
+        <!-- 横线 (10条) -->
+        <line v-for="i in 10" :key="'h-' + i" :x1="cellSize * 0.5" :y1="cellSize * (i - 0.5)" :x2="cellSize * 8.5"
+          :y2="cellSize * (i - 0.5)" stroke="rgba(0,0,0,1)" stroke-width="1" />
 
-      <!-- 竖线 (上半部分 5条) -->
-      <line v-for="i in 7" :key="'v-top-' + i" :x1="cellSize * (i + 0.5)" :y1="cellSize * 0.5"
-        :x2="cellSize * (i + 0.5)" :y2="cellSize * 4.5" stroke="rgba(0,0,0,1)" stroke-width="0.5" />
+        <!-- 竖线 (上半部分 5条) -->
+        <line v-for="i in 7" :key="'v-top-' + i" :x1="cellSize * (i + 0.5)" :y1="cellSize * 0.5"
+          :x2="cellSize * (i + 0.5)" :y2="cellSize * 4.5" stroke="rgba(0,0,0,1)" stroke-width="1" />
 
-      <!-- 竖线 (下半部分 5条) -->
-      <line v-for="i in 7" :key="'v-bottom-' + i" :x1="cellSize * (i + 0.5)" :y1="cellSize * 5.5"
-        :x2="cellSize * (i + 0.5)" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)" stroke-width="0.5" />
+        <!-- 竖线 (下半部分 5条) -->
+        <line v-for="i in 7" :key="'v-bottom-' + i" :x1="cellSize * (i + 0.5)" :y1="cellSize * 5.5"
+          :x2="cellSize * (i + 0.5)" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)" stroke-width="1" />
 
-      <!-- 左右两侧贯通的竖线 -->
-      <line :x1="cellSize * 0.5" :y1="cellSize * 0.5" :x2="cellSize * 0.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
-        stroke-width="0.5" />
-      <line :x1="cellSize * 8.5" :y1="cellSize * 0.5" :x2="cellSize * 8.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
-        stroke-width="0.5" />
+        <!-- 左右两侧贯通的竖线 -->
+        <line :x1="cellSize * 0.5" :y1="cellSize * 0.5" :x2="cellSize * 0.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+          stroke-width="1" />
+        <line :x1="cellSize * 8.5" :y1="cellSize * 0.5" :x2="cellSize * 8.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+          stroke-width="1" />
 
-      <!-- 九宫格斜线 (红方) -->
-      <line :x1="cellSize * 3.5" :y1="cellSize * 0.5" :x2="cellSize * 5.5" :y2="cellSize * 2.5" stroke="rgba(0,0,0,1)"
-        stroke-width="0.5" />
-      <line :x1="cellSize * 5.5" :y1="cellSize * 0.5" :x2="cellSize * 3.5" :y2="cellSize * 2.5" stroke="rgba(0,0,0,1)"
-        stroke-width="0.5" />
+        <!-- 九宫格斜线 (红方) -->
+        <line :x1="cellSize * 3.5" :y1="cellSize * 0.5" :x2="cellSize * 5.5" :y2="cellSize * 2.5" stroke="rgba(0,0,0,1)"
+          stroke-width="1" />
+        <line :x1="cellSize * 5.5" :y1="cellSize * 0.5" :x2="cellSize * 3.5" :y2="cellSize * 2.5" stroke="rgba(0,0,0,1)"
+          stroke-width="1" />
 
-      <!-- 九宫格斜线 (黑方) -->
-      <line :x1="cellSize * 3.5" :y1="cellSize * 7.5" :x2="cellSize * 5.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
-        stroke-width="0.5" />
-      <line :x1="cellSize * 5.5" :y1="cellSize * 7.5" :x2="cellSize * 3.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
-        stroke-width="0.5" />
+        <!-- 九宫格斜线 (黑方) -->
+        <line :x1="cellSize * 3.5" :y1="cellSize * 7.5" :x2="cellSize * 5.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+          stroke-width="1" />
+        <line :x1="cellSize * 5.5" :y1="cellSize * 7.5" :x2="cellSize * 3.5" :y2="cellSize * 9.5" stroke="rgba(0,0,0,1)"
+          stroke-width="1" />
 
-      <!-- 楚河汉界 文字 -->
-      <text :x="cellSize * 2.5" :y="cellSize * 5 + 6" fill="rgba(0,0,0,0.3)" font-size="24" font-family="KaiTi"
-        text-anchor="middle" dominant-baseline="middle" style="pointer-events: none;">楚 河</text>
-      <text :x="cellSize * 6.5" :y="cellSize * 5 + 6" fill="rgba(0,0,0,0.3)" font-size="24" font-family="KaiTi"
-        text-anchor="middle" dominant-baseline="middle" style="pointer-events: none;">汉 界</text>
+        <!-- 楚河汉界 文字 -->
+        <text :x="cellSize * 2.5" :y="cellSize * 5 + 6" fill="rgba(0,0,0,0.3)" font-size="48" font-family="KaiTi"
+          text-anchor="middle" dominant-baseline="middle" style="pointer-events: none;">楚 河</text>
+        <text :x="cellSize * 6.5" :y="cellSize * 5 + 6" fill="rgba(0,0,0,0.3)" font-size="48" font-family="KaiTi"
+          text-anchor="middle" dominant-baseline="middle" style="pointer-events: none;">汉 界</text>
 
-      <!-- 炮和兵的特殊标记 (可选，这里只做简单的示例，可以添加十字标记) -->
-    </svg>
+        <!-- 炮和兵的特殊标记 (可选，这里只做简单的示例，可以添加十字标记) -->
+      </svg>
 
-    <!-- 棋盘网格 (Interactive Layer) -->
-    <div v-for="y in 10" :key="'row-' + y" class="row">
-      <div v-for="x in 9" :key="'cell-' + x + '-' + y" class="cell" @click="checkCamp(x - 1, y - 1)">
-        <!-- 显示棋盘中的棋子 -->
-        <div v-if="board[y - 1] && board[y - 1]![x - 1]" :class="['chess-piece',
-          board[y - 1]![x - 1]!.isRed ? 'piece-red' : 'piece-black',
-          possibleMoves.some(p => p.x === x - 1 && p.y === y - 1) ? 'targetable' : '',
-          movePath.some(p => p.to.x === x - 1 && p.to.y === y - 1) ? 'last-move' : '']"
-          :style="{ animationDelay: '-' + ((x + y * 9) % 10) + 's' }">
-          <span :style="{ animationDelay: '-' + ((x + y * 13) % 10) + 's' }">{{ board[y - 1]![x - 1]!.name }}</span>
+      <!-- 棋盘网格 (Interactive Layer) -->
+      <div v-for="y in 10" :key="'row-' + y" class="row">
+        <div v-for="x in 9" :key="'cell-' + x + '-' + y" class="cell" @click="checkCamp(x - 1, y - 1)">
+          <!-- 显示棋盘中的棋子 -->
+          <div v-if="board[y - 1] && board[y - 1]![x - 1]" :class="['chess-piece',
+            board[y - 1]![x - 1]!.isRed ? 'piece-red' : 'piece-black',
+            possibleMoves.some(p => p.x === x - 1 && p.y === y - 1) ? 'targetable' : '',
+            movePath.some(p => p.to.x === x - 1 && p.to.y === y - 1) ? 'last-move' : '']"
+            :style="{ animationDelay: '-' + ((x + y * 9) % 10) + 's' }">
+            <span :style="{ animationDelay: '-' + ((x + y * 13) % 10) + 's' }">{{ board[y - 1]![x - 1]!.name }}</span>
+          </div>
+
+          <!-- 起点标记：显示上一步的起始位置 -->
+          <div v-if="movePath.some(p => p.from.x === x - 1 && p.from.y === y - 1)" class="start-marker"></div>
+
+          <!-- 显示可落点位置（仅空格子显示绿点） -->
+          <div v-if="possibleMoves.some(p => p.x === x - 1 && p.y === y - 1) && !(board[y - 1] && board[y - 1]![x - 1])"
+            class="possible-move"></div>
         </div>
-
-        <!-- 起点标记：显示上一步的起始位置 -->
-        <div v-if="movePath.some(p => p.from.x === x - 1 && p.from.y === y - 1)" class="start-marker"></div>
-
-        <!-- 显示可落点位置（仅空格子显示绿点） -->
-        <div v-if="possibleMoves.some(p => p.x === x - 1 && p.y === y - 1) && !(board[y - 1] && board[y - 1]![x - 1])"
-          class="possible-move"></div>
       </div>
-    </div>
 
-    <!-- 路径图层：保留结构备用 -->
-    <svg class="trajectory-overlay"></svg>
-    <!-- 爆炸粒子容器 -->
-    <div ref="explosionContainer" class="explosion-container"></div>
+      <!-- 路径图层：保留结构备用 -->
+      <svg class="trajectory-overlay"></svg>
+      <!-- 爆炸粒子容器 -->
+      <div ref="explosionContainer" class="explosion-container"></div>
+    </div>
   </div>
 </template>
 
@@ -135,12 +140,12 @@ interface FusionCollection {
 //缓存选中的棋子
 let selectedKey: string | null = null
 //棋子运动轨迹
-
+let currentAudio: HTMLAudioElement | null = null;
 export default defineComponent({
   data() {
     return {
       // 棋盘基础尺寸配置
-      cellSize: 50,
+      cellSize: 75,
 
       //当前阵营
       currentCamp: true,//true表示红方，false表示黑方
@@ -807,8 +812,8 @@ export default defineComponent({
       }
 
       // 计算爆炸中心位置 (格子大小50px, 中心偏移25px)
-      const cx = pieceX * 50 + 25
-      const cy = pieceY * 50 + 25
+      const cx = pieceX * this.cellSize + this.cellSize / 2
+      const cy = pieceY * this.cellSize + this.cellSize / 2
 
       const droplets: HTMLElement[] = []
       const count = 16 + Math.random() * 8
@@ -817,7 +822,7 @@ export default defineComponent({
         const drop = document.createElement('div')
 
         // 粒子大小
-        const size = 3 + Math.random() * 9
+        const size = 5 + Math.random() * 9
 
         // 应用所有样式内联（因为scoped CSS不适用于动态创建的元素）
         Object.assign(drop.style, {
@@ -838,7 +843,7 @@ export default defineComponent({
 
         // 随机爆炸方向
         const angle = Math.random() * Math.PI * 2
-        const dist = 50 + Math.random() * 70
+        const dist = 65 + Math.random() * 65
         drop.dataset.dx = String(Math.cos(angle) * dist)
         drop.dataset.dy = String(Math.sin(angle) * dist)
 
@@ -850,8 +855,27 @@ export default defineComponent({
     },
     // 播放音效
     playAudio(name: string) {
-      const audio = new Audio(name)
-      audio.play()
+      // 1. 如果当前已经有声音在播，暂停并释放引用
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+
+      // 2. 创建新音频
+      const audio = new Audio(name);
+      currentAudio = audio;
+
+      // 3. 播放（注意：现代浏览器要求用户手势触发，否则可能被静音或拒绝）
+      audio.play().catch((err) => {
+        console.error("播放被拦截或失败了:", err);
+      });
+
+      // 播放结束后清理引用（仅当该 audio 仍是当前正在播放的实例）
+      audio.onended = () => {
+        if (currentAudio === audio) {
+          currentAudio = null;
+        }
+      };
     },
     //处理点击事件
     handleCellClick(x: number, y: number) {
@@ -920,7 +944,12 @@ export default defineComponent({
 
       const result = this.resolveMove(x, y, chess)
 
-      if (result === 'move' || result === 'eat') {
+      if (result === 'move') {
+        this.playAudio(moveMusic);
+        chess.x = x
+        chess.y = y
+      } else if (result === 'eat') {
+        this.playAudio(eatMusic);
         chess.x = x
         chess.y = y
       }
@@ -933,7 +962,7 @@ export default defineComponent({
 
       //记录运动轨迹
       this.movePath = [{ from: fromPos, to: { x, y } }]
-      this.playAudio(moveMusic);
+
       this.updateBoard()
 
       // 将军检测：每次移动后检测对方是否被将军
@@ -978,7 +1007,6 @@ export default defineComponent({
       // 触发爆炸效果
       const targetPiece = this.qiZiArray[targetKey]!
       this.performExplosion(targetPiece.x, targetPiece.y, targetPiece.isRed)
-      this.playAudio(eatMusic);
       delete this.qiZiArray[targetKey]
       return 'eat'
     },
@@ -1676,6 +1704,22 @@ export default defineComponent({
 
 <style scoped>
 /* 棋盘容器样式 */
+.chessboard-container {
+  /* 禁止滚动条出现 */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+/* 手机端允许滚动 */
+@media (max-width: 768px) {
+  .chessboard-container {
+    overflow: auto;
+  }
+}
+
 /* 棋盘组件 */
 .chessboard {
   /* 弹性布局让行垂直排列 */
@@ -1685,12 +1729,13 @@ export default defineComponent({
   width: fit-content;
   margin: 20px auto;
   position: relative;
-  padding: 0;
+  padding: 0px;
   border-radius: 16px;
   background: rgba(240, 230, 210, 0.3);
   /*   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px); */
   border: 1.2px solid rgb(0, 0, 0);
+  top: 10px;
 }
 
 .board-svg {
@@ -1711,8 +1756,8 @@ export default defineComponent({
 .cell {
   position: relative;
   /* 添加这一行 */
-  width: 50px;
-  height: 50px;
+  width: 75px;
+  height: 75px;
   box-sizing: border-box;
   /* 确保格子实际大小为50px */
   /* border: 1px solid #ccc;  Removed borders */
@@ -1747,15 +1792,16 @@ export default defineComponent({
 /* 棋子样式 */
 /* 棋子统一样式 - 为适配现有50px格子，调整尺寸 */
 .chess-piece {
-  --piece-size: 44px;
+  --piece-size: 65px;
   width: var(--piece-size);
   height: var(--piece-size);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.4rem;
+  font-size: 2.4rem;
   font-family: "KaiTi", "楷体", "STKaiti", serif;
-  font-weight: 900;
+  /* Increased font weight */
+  font-weight: 800;
   cursor: pointer;
   z-index: 20;
   user-select: none;
@@ -1763,7 +1809,7 @@ export default defineComponent({
   /* 果冻形状 */
   border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
   background-color: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(0px);
 
   /* 核心光影 */
   box-shadow:
