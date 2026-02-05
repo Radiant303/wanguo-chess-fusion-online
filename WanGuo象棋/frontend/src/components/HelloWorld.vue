@@ -945,6 +945,13 @@ export default defineComponent({
           alert(checkResult.message)
         }
       }
+
+      //绝杀检测:每次移动后检测对方是否还有子可以移动
+      const checkResult2 = this.checkIsInCheckmate(chess, { x, y })
+      if (checkResult2) {
+        console.log(`🚨 ${chess.isRed ? '红方' : '黑方'}绝杀`)
+        alert(chess.isRed ? '红方绝杀' : '黑方绝杀')
+      }
     },
     //解析走子
     resolveMove(x: number, y: number, chess: ChessPiece) {
@@ -1643,6 +1650,21 @@ export default defineComponent({
         isCheckmate: false,
         message: `将军！${opponentIsRed ? '红方' : '黑方'}请应将！`
       }
+    },
+    checkIsInCheckmate(chess: ChessPiece, _pos: ChessPosition): boolean {
+      // 检测对方是否被将军（刚走棋的一方将对方）
+      const opponentIsRed = !chess.isRed
+      //遍历对方所有棋子
+      for (const key of Object.keys(this.qiZiArray)) {
+        const piece = this.qiZiArray[key]
+        if (piece && piece.isRed === opponentIsRed) {
+          const moves = this.checkMove(piece)
+          if (moves.length > 0) {
+            return false
+          }
+        }
+      }
+      return true
     }
   },
   //mounted只在组件创建时执行一次
